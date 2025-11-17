@@ -1,4 +1,5 @@
 export const API_BASE_URL = "http://localhost:5000";
+// export const API_BASE_URL = "https://jummabackendapi.onrender.com";
 
 export const API_URLS = {
   IMAM: {
@@ -31,6 +32,7 @@ export const API_URLS = {
     MESCIDQEYDET: `${API_BASE_URL}/webapi/admin/mescidqeydi`,
     SETIANE: `${API_BASE_URL}/webapi/admin/setiane`,
     SATICISIGNUP: `${API_BASE_URL}/webapi/satici/saticisignup`,
+    ADMINSIGNUP: `${API_BASE_URL}/webapi/admin/adminsignup`,
   },
   SATICI: {
     LOGIN: `${API_BASE_URL}/webapi/satici/login`,

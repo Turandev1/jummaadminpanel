@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { API_URLS } from "../../utils/api";
 import useAuth from "../../redux/authredux";

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -12,16 +12,38 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { fonts } from "../../App";
+import { fonts } from "../../../fonts";
 
 // renk paleti
 const colors = ["#00C49F", "#FF8042", "#0088FE", "#FFBB28"];
+
+// örnekdata.js
+
+const exampleMonthlySales = [
+  { month: "Yanvar", sales: 12 },
+  { month: "Fevral", sales: 19 },
+  { month: "Mart", sales: 8 },
+  { month: "Aprel", sales: 15 },
+  { month: "May", sales: 22 },
+];
+
+const exampleProductSales = [
+  { name: "Alma", value: 25 },
+  { name: "Portağal", value: 18 },
+  { name: "Kivi", value: 12 },
+  { name: "Banan", value: 30 },
+];
 
 const Saticipage = () => {
   const [monthlysalesamount, setmonthlysalesamount] = useState([]);
   const [productSalesData, setproductSalesData] = useState([]);
   const totalSales = productSalesData.reduce((sum, p) => sum + p.value, 0);
   const totalRevenue = totalSales * 10; // örnek hesaplama (backendden alınacak)
+
+  useEffect(() => {
+    setmonthlysalesamount(exampleMonthlySales);
+    setproductSalesData(exampleProductSales);
+  }, []);
 
   return (
     <div className="p-8 w-full bg-gray-100 min-h-screen">

@@ -54,6 +54,7 @@ export async function initAuth() {
     return true;
   } catch (err) {
     // token expired → refresh dene
+    console.log('err:',err.response?.data)
     const newAccess = await refreshAccessToken();
     if (!newAccess) {
       store.dispatch(logout());

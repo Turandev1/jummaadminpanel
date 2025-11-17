@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import { toast } from "react-toastify";
 import useAuth from "../../redux/authredux";
 
 const Imampage = () => {
-  const { user, setUser, logout, editimamacc } = useAuth();
+  const { user, logout, editimamacc } = useAuth();
   const [editable, setEditable] = useState(false);
   const [isloading, setisloading] = useState(false);
   const [formData, setFormData] = useState({

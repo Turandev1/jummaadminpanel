@@ -2,7 +2,7 @@
 import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import useAuth from "../redux/authredux";
-import { fonts } from "../App";
+import { fonts } from "../../fonts";
 
 const Sidebar = () => {
   const location = useLocation();

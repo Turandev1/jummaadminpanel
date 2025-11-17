@@ -168,7 +168,6 @@ const Dashboard = () => {
   const [editable, setEditable] = useState(false);
   const dispatch = useDispatch();
   const [showpicker, setshowpicker] = useState(false);
-  const [loading, setloading] = useState(false);
   const [previewModal, setPreviewModal] = useState({
     open: false,
     image: "",
@@ -180,7 +179,7 @@ const Dashboard = () => {
     email: user?.email || "",
     phone: user?.phone || "",
     dogumtarixi: user?.dogumtarixi || "",
-    marketname: user?.market.ad || "",
+    marketname: user?.market?.ad || "",
   });
 
   const handleInput = (e) => {
@@ -272,7 +271,7 @@ const Dashboard = () => {
       {/* PROFIL KARTI */}
       <div className="bg-white shadow-md rounded-xl relative p-6 flex items-center gap-6">
         <div className="w-28 h-28 rounded-full p-1 overflow-hidden bg-gray-200 flex justify-center items-center">
-          {user.profilephoto.secure_url ? (
+          {user.profilephoto?.secure_url ? (
             <img
               src={user.profilephoto.secure_url}
               className="w-full h-full object-cover rounded-full cursor-pointer"
@@ -366,7 +365,6 @@ const Dashboard = () => {
 
               <button
                 onClick={handleSave}
-                disabled={loading}
                 className="bg-green-600 cursor-pointer text-white px-4 py-2 rounded-md"
               >
                 Yadda saxla

@@ -3,9 +3,8 @@ import React, { useState } from "react";
 import { useRef } from "react";
 import api from "../../utils/axiosclient";
 import { API_URLS } from "../../utils/api";
-import { toast } from "react-toastify";
 import useAuth from "../../redux/authredux";
-
+import { toast } from "react-toastify";
 const Mehsullar = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -101,12 +100,13 @@ const Mehsullar = () => {
         ozellikler: formData.features,
       });
 
-console.log('res:',res.data)
-
+      if (res.data.success) {
+        toast.success("Məhsul uğurla yaradıldı");
+      }
+      console.log("res:", res.data);
     } catch (error) {
       console.error(error);
     }
-    
   };
 
   return (

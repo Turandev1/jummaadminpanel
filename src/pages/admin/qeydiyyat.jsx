@@ -3,6 +3,7 @@ import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import { toast } from "react-toastify";
 import useAuth from "../../redux/authredux";
+import api from "../../utils/axiosclient";
 
 const Mescidqeyd = () => {
   const [name, setName] = useState("");
@@ -100,7 +101,7 @@ const SaticiSignup = () => {
   const [password, setpassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { accessToken } = useAuth();
-  
+
   const saticiqeydiyyat = async (e) => {
     e.preventDefault();
 
@@ -203,7 +204,123 @@ const SaticiSignup = () => {
 };
 
 const AdminSignup = () => {
-  return <div>AdminSignup</div>;
+  const [name, setad] = useState("");
+  const [surname, setsoyad] = useState("");
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { accessToken } = useAuth();
+  const [username, setusername] = useState("");
+
+  const adminqeydiyyat = async (e) => {
+    e.preventDefault();
+
+    if (!name || !surname || !email || !password) {
+      toast.warn("Bütün xanaları doldurun.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await api.post(
+        API_URLS.ADMIN.ADMINSIGNUP,
+        {
+          name,
+          surname,
+          email,
+          password,
+          username,
+        },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      if (res.data?.success) {
+        toast.success(res.data.mesaj || "Qeydiyyat uğurludur");
+        setad("");
+        setsoyad("");
+        setemail("");
+        setpassword("");
+        setusername('')
+      } else {
+        toast.error(res.data?.hata || "Qeydiyyat uğursuzdur");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Server xətası baş verdi");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex justify-center items-center bg-gray-50">
+      <form
+        onSubmit={adminqeydiyyat}
+        className="bg-white p-6 rounded-2xl shadow-md flex flex-col gap-4 w-full max-w-md"
+      >
+        <h2 className="text-2xl font-bold text-center mb-2">
+          Satici Qeydiyyatı
+        </h2>
+
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setad(e.target.value)}
+          placeholder="Ad"
+          className="border px-3 py-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+
+        <input
+          type="text"
+          placeholder="Soyad"
+          value={surname}
+          onChange={(e) => setsoyad(e.target.value)}
+          className="border px-3 py-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setusername(e.target.value)}
+          className="border px-3 py-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+
+        <input
+          type="text"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setemail(e.target.value)}
+          className="border px-3 py-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+
+        <div>
+          <input
+            type="text"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setpassword(e.target.value)}
+            className="border px-3 py-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className={`py-2 rounded-lg text-white transition cursor-pointer ${
+            loading
+              ? "bg-green-300 cursor-not-allowed"
+              : "bg-green-500 hover:bg-green-600"
+          }`}
+        >
+          {loading ? "Göndərilir..." : "Qeyd et"}
+        </button>
+      </form>
+    </div>
+  );
 };
 
 const Qeydiyyat = () => {

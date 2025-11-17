@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import useAuth from "../../redux/authredux";
-import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import { useDispatch } from "react-redux";
 import { logout, setauthdata } from "../../redux/store";
