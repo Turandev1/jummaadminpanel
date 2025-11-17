@@ -1,0 +1,43 @@
+export const API_BASE_URL = "http://localhost:5000";
+
+export const API_URLS = {
+  IMAM: {
+    IMAMSIGNUP: `${API_BASE_URL}/webapi/imam/imamsignup`,
+    IMAMLOGIN: `${API_BASE_URL}/webapi/imam/imamlogin`,
+    EDITIMAMACC: `${API_BASE_URL}/webapi/imam/editimamacc`,
+    GETME: `${API_BASE_URL}/webapi/imam/getme`,
+    IANEREQUEST: `${API_BASE_URL}/webapi/imam/setiane`,
+    REFRESHTOKEN: `${API_BASE_URL}/webapi/imam/refreshtoken`,
+    LOGOUT: `${API_BASE_URL}/webapi/imam/logoutweb`,
+  },
+  ADMIN: {
+    ADMINLOGIN: `${API_BASE_URL}/webapi/admin/admin-login`,
+    LOGOUT: `${API_BASE_URL}/webapi/admin/admin-logout`,
+    GETUSERS: `${API_BASE_URL}/webapi/admin/getusers`,
+    GETADMINS: `${API_BASE_URL}/webapi/admin/getadmins`,
+    GETMESCIDS: `${API_BASE_URL}/webapi/admin/getmescids`,
+    GETME: `${API_BASE_URL}/webapi/admin/getme`,
+    REFRESHTOKEN: `${API_BASE_URL}/webapi/admin/refreshToken`,
+    EDITADMIN: `${API_BASE_URL}/webapi/admin/edit-admin`,
+    GETIANELER: `${API_BASE_URL}/webapi/admin/get-ianeler`,
+    MARKASREAD: `${API_BASE_URL}/webapi/admin/mark-asread`,
+    MARKASUNREAD: `${API_BASE_URL}/webapi/admin/mark-asunread`,
+    MARKASCOMPLETED: `${API_BASE_URL}/webapi/admin/mark-ascompleted`,
+    APPROVEIANE: `${API_BASE_URL}/webapi/admin/approve-iane`,
+    REJECTIANE: `${API_BASE_URL}/webapi/admin/reject-iane`,
+    DELETEIANE: `${API_BASE_URL}/webapi/admin/delete-iane`,
+    ACTIVATEMESCID: `${API_BASE_URL}/webapi/admin/activate-mescid`,
+    EDITMESCID: `${API_BASE_URL}/webapi/admin/edit-mescid`,
+    MESCIDQEYDET: `${API_BASE_URL}/webapi/admin/mescidqeydi`,
+    SETIANE: `${API_BASE_URL}/webapi/admin/setiane`,
+    SATICISIGNUP: `${API_BASE_URL}/webapi/satici/saticisignup`,
+  },
+  SATICI: {
+    LOGIN: `${API_BASE_URL}/webapi/satici/login`,
+    LOGOUT: `${API_BASE_URL}/webapi/satici/logout`,
+    VERIFYME: `${API_BASE_URL}/webapi/satici/getme`,
+    PROPHILEPHOTO: `${API_BASE_URL}/webapi/satici/profilephoto`,
+    EDITACCOUNT: `${API_BASE_URL}/webapi/satici/edit-account`,
+    MEHSULQOY: `${API_BASE_URL}/webapi/satici/mehsul-qoy`,
+  },
+};

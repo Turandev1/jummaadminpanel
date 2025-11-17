@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "merienda-semibold";
+  src: url("./assets/fonts/Merienda-SemiBold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "oregano-regular";
+  src: url("./assets/fonts/Oregano-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "arima-medium";
+  src: url("./assets/fonts/Arima-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "inter-bold-italic";
+  src: url("./assets/fonts/Inter_18pt-BoldItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "inter-light-italic";
+  src: url("./assets/fonts/Inter_18pt-LightItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "lora-italic-variable";
+  src: url("./assets/fonts/Lora-Italic-VariableFont_wght.ttf")
+    format("truetype");
+}
+
+@font-face {
+  font-family: "lora-medium-italic";
+  src: url("./assets/fonts/Lora-MediumItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "lora-bold-italic";
+  src: url("./assets/fonts/Lora-BoldItalic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "arima-bold";
+  src: url("./assets/fonts/Arima-Bold.ttf") format("truetype");
+}
