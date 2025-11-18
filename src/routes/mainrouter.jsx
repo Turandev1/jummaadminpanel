@@ -22,9 +22,10 @@ import Qeydiyyat from "../pages/admin/qeydiyyat";
 import Dashboard from "../pages/satici/dashboard";
 import Ianeyerlestir from "../pages/admin/ianeqoy";
 import useAuth from "../redux/authredux";
-import Mehsullar from "../pages/satici/mehsullar";
 import Sifarisler from "../pages/satici/sifarisler";
 import Imams from "../pages/admin/imams";
+import AddMehsul from "../pages/satici/addmehsul";
+import Mehsullarr from "../pages/satici/mehsullarr";
 
 const DashboardLayout = () => {
   return (
@@ -85,7 +86,8 @@ export const SaticiRoutes = () => (
     >
       <Route index element={<Dashboard />} />
       <Route path="statistika" element={<Saticipage />} />
-      <Route path="products" element={<Mehsullar />} />
+      <Route path="addproduct" element={<AddMehsul />} />
+      <Route path="products" element={<Mehsullarr />} />
       <Route path="orders" element={<Sifarisler />} />
       {/* satıcı alt sayfalar */}
     </Route>

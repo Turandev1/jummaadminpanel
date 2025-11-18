@@ -28,6 +28,7 @@ const Sidebar = () => {
     satici: [
       { to: "/satici", label: "Profil" },
       { to: "/satici/statistika", label: "Statistika" },
+      { to: "/satici/addproduct", label: "Məhsul əlavə et" },
       { to: "/satici/products", label: "Məhsullar" },
       { to: "/satici/orders", label: "Sifarişlər" },
     ],

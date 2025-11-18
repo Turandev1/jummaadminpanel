@@ -5,7 +5,7 @@ import api from "../../utils/axiosclient";
 import { API_URLS } from "../../utils/api";
 import useAuth from "../../redux/authredux";
 import { toast } from "react-toastify";
-const Mehsullar = () => {
+const AddMehsul = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -328,4 +328,4 @@ const Mehsullar = () => {
   );
 };
 
-export default Mehsullar;
+export default AddMehsul

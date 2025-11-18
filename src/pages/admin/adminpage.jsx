@@ -26,7 +26,7 @@ const Adminpage = () => {
 
   const editadmin = async (id, name, surname, email, username) => {
     try {
-      const res = await api.put(
+      const res = await api.patch(
         API_URLS.ADMIN.EDITADMIN,
         {
           id,

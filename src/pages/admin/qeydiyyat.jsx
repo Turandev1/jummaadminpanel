@@ -223,7 +223,7 @@ const AdminSignup = () => {
     setLoading(true);
 
     try {
-      const res = await api.post(
+      const res = await api.put(
         API_URLS.ADMIN.ADMINSIGNUP,
         {
           name,
@@ -262,7 +262,7 @@ const AdminSignup = () => {
         className="bg-white p-6 rounded-2xl shadow-md flex flex-col gap-4 w-full max-w-md"
       >
         <h2 className="text-2xl font-bold text-center mb-2">
-          Satici Qeydiyyatı
+          Admin Qeydiyyatı
         </h2>
 
         <input
@@ -283,6 +283,7 @@ const AdminSignup = () => {
 
         <input
           type="text"
+          autoComplete="email"
           placeholder="Username"
           value={username}
           onChange={(e) => setusername(e.target.value)}
@@ -290,7 +291,7 @@ const AdminSignup = () => {
         />
 
         <input
-          type="text"
+          type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setemail(e.target.value)}

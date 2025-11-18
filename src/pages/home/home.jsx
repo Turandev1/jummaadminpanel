@@ -5,112 +5,171 @@ import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import { Navigate, useNavigate } from "react-router-dom";
 import useGetClientInfo from "../../components/osinfo";
-import { Eye, EyeOff, LogIn, ShieldCheck, LockKeyhole } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  LogIn,
+  ShieldCheck,
+  LockKeyhole,
+  User,
+  Mail,
+  Lock,
+  ArrowLeftCircle,
+  ArrowRightCircle,
+  ArrowRight,
+} from "lucide-react";
 import { useDispatch } from "react-redux";
 import { setauthdata } from "../../redux/store";
+import api from "../../utils/axiosclient";
 
-// İmam Login
-const ImamLogin = () => {
-  const { browser, os } = useGetClientInfo();
-  const [loading, setloading] = useState(false);
-  const [show, setshow] = useState(false);
-  const navigate = useNavigate();
-  const [form, setform] = useState({
+const SaticiRegister = ({ setView }) => {
+  const [showpassword, setshowpassword] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    surname: "",
     email: "",
     password: "",
   });
 
-  const handlechange = (e) => {
-    const { name, value } = e.target;
-    setform((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  // const enabled=formData.name||formData.surname||formData.email||formData.password
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("İmam login fonksiyonu çalıştı");
-
     try {
-      setloading(true);
-      const res = await axios.post(API_URLS.IMAM.IMAMLOGIN, {
-        email: form.email,
-        password: form.password,
-        platform: "web",
-        os,
-        browser,
-        isWeb: true,
+      const res = await api.post(API_URLS.SATICI.SATICISIGNUP, {
+        ad: formData.name,
+        soyad: formData.surname,
+        email: formData.email,
+        password: formData.password,
       });
 
       const data = res.data;
-      console.log("data:", data);
 
-      localStorage.setItem("accessToken", data.accessToken),
-        localStorage.setItem("role", data?.user?.role);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      toast.success("Giriş ugurludur");
-      navigate("/imam");
+      if (data.success) {
+        toast.success("Qeydiyyat uğurla başa çatdı. Hesabınıza daxil olun", {
+          autoClose: 3000,
+        });
+      }
+      setView("login");
     } catch (error) {
       console.error(error);
-      toast.error(error?.response?.data?.hata);
-    } finally {
-      setloading(false);
+      toast.error("Qeydiyyat zamanı xəta baş verdi");
     }
   };
 
-  const isdisabled = !form.email || !form.password;
-
   return (
-    <div className="w-full max-w-md mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg border">
-      <h2 className="text-2xl font-bold text-center mb-6">İmam Girişi</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          type="text"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handlechange}
-          autoComplete="email"
-          className="border p-2 rounded-md  duration-300 focus:outline-none focus:ring-2 focus:ring-green-400"
-        />
-        <div className="relative">
-          <input
-            name="password"
-            onChange={handlechange}
-            type={!show ? "password" : "text"}
-            value={form.password}
-            autoComplete="new-password"
-            placeholder="Şifrə"
-            className="border p-2 rounded-md w-full  duration-300 focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
+    <div className="w-full flex justify-center items-center mt-8 px-4">
+      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md border border-green-100">
+        <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
+          Satıcı Qeydiyyatı
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Name */}
+          <div>
+            <label className="text-sm font-medium text-gray-600">Ad</label>
+            <div className="flex items-center bg-gray-100 gap-2 border rounded-lg px-3 py-2 focus-within:border-green-500 transition">
+              <User size={18} className="text-gray-400" />
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Adınızı daxil edin"
+                className="w-full outline-none text-gray-700"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Surname */}
+          <div>
+            <label className="text-sm font-medium text-gray-600">Soyad</label>
+            <div className="flex items-center bg-gray-100 gap-2 border rounded-lg px-3 py-2 focus-within:border-green-500 transition">
+              <User size={18} className="text-gray-400" />
+              <input
+                type="text"
+                name="surname"
+                value={formData.surname}
+                onChange={handleChange}
+                placeholder="Soyadınızı daxil edin"
+                className="w-full outline-none text-gray-700"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="text-sm font-medium text-gray-600">Email</label>
+            <div className="flex items-center bg-gray-100 gap-2 border rounded-lg px-3 py-2 focus-within:border-green-500 transition">
+              <Mail size={18} className="text-gray-400" />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Email daxil edin"
+                className="w-full outline-none"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="text-sm font-medium text-gray-600">Şifrə</label>
+            <div className="flex items-center bg-gray-100 gap-2 border rounded-lg px-3 py-2 focus-within:border-green-500 transition">
+              <Lock size={18} className="text-gray-400" />
+              <input
+                type={showpassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Şifrənizi daxil edin"
+                className="w-full outline-none"
+                required
+              />
+              <button
+                className="cursor-pointer"
+                type="button"
+                onClick={() => setshowpassword(!showpassword)}
+              >
+                {showpassword ? "Gizlə" : "Göstər"}
+              </button>
+            </div>
+          </div>
+
+          {/* Submit Button */}
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              setshow(!show);
-            }}
-            className="absolute right-2 top-2 opacity-70 cursor-pointer"
+            type="submit"
+            className="w-full cursor-pointer bg-green-600 text-white py-2 rounded-lg text-lg font-medium hover:bg-green-700 transition-all"
           >
-            {!show ? "Göstər" : "Gizle"}
+            Qeydiyyat
+          </button>
+        </form>
+
+        {/* Register CTA */}
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <button
+            type="button"
+            onClick={() => setView("login")}
+            className="text-green-600 flex flex-row justify-center gap-x-5 text-xl border rounded-2xl mt-4 py-2 w-full cursor-pointer font-semibold hover:text-green-700 hover:scale-110 transition-all"
+          >
+            Əsas səhifəyə qayıt
+            <ArrowRight size={30} />
           </button>
         </div>
-        <button
-          disabled={isdisabled}
-          type="submit"
-          className={`bg-green-500 cursor-pointer text-white p-2 rounded-md hover:bg-green-600 duration-200 ${
-            isdisabled ? "opacity-50" : "opacity-100"
-          }`}
-        >
-          {loading ? "Giriş edilir" : "Giriş et"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 };
 
 // Satıcı Login
 
-const SaticiLogin = () => {
+const SaticiLogin = ({ setView }) => {
   const [loading, setLoading] = useState(false);
   const { browser, os } = useGetClientInfo();
   const [show, setShow] = useState(false);
@@ -156,7 +215,7 @@ const SaticiLogin = () => {
       );
 
       navigate("/satici");
-      toast.success('Giriş uğurludur')
+      toast.success("Giriş uğurludur");
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data?.hata || "Giriş başarısız!");
@@ -229,7 +288,7 @@ const SaticiLogin = () => {
           <button
             type="submit"
             disabled={isDisabled || loading}
-            className={`flex items-center justify-center gap-2 cursor-pointer bg-green-600 text-white font-medium py-3 rounded-md transition-all ${
+            className={`flex text-2xl items-center justify-center gap-2 cursor-pointer bg-green-600 text-white font-medium py-3 rounded-md transition-all ${
               isDisabled || loading
                 ? "opacity-60 cursor-not-allowed"
                 : "hover:bg-green-700 hover:scale-[1.02]"
@@ -239,11 +298,29 @@ const SaticiLogin = () => {
               <span className="animate-pulse">Giriş edilir...</span>
             ) : (
               <>
-                <LogIn size={18} /> Giriş et
+                <LogIn size={24} /> Giriş et
               </>
             )}
           </button>
         </form>
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-6">
+          <div className="flex-1 h-px bg-gray-600"></div>
+          <span className="text-gray-400 text-sm">və ya</span>
+          <div className="flex-1 h-px bg-gray-600"></div>
+        </div>
+
+        {/* Register CTA */}
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <span className="text-gray-600">Hesabın yoxdur?</span>
+          <button
+            type="button"
+            onClick={() => setView("register")}
+            className="text-green-600 cursor-pointer font-semibold hover:text-green-700 hover:underline hover:scale-105 transition-all"
+          >
+            Qeydiyyatdan keç
+          </button>
+        </div>
 
         {/* Footer */}
         <p className="text-center text-gray-400 text-sm mt-6">
@@ -368,7 +445,7 @@ const AdminLogin = () => {
           <button
             type="submit"
             disabled={isDisabled || loading}
-            className={`flex items-center justify-center gap-2 bg-green-600 text-white font-medium py-3 rounded-md transition-all ${
+            className={`flex items-center justify-center gap-2 text-2xl bg-green-600 text-white font-medium py-3 rounded-md transition-all ${
               isDisabled || loading
                 ? "opacity-60 cursor-not-allowed"
                 : "hover:bg-green-700 hover:scale-[1.02]"
@@ -389,6 +466,7 @@ const AdminLogin = () => {
 
 // Home Component
 export default function Home() {
+  const [view, setView] = useState("login"); // home | login | register
   const [activeRole, setActiveRole] = useState("satici");
 
   const roles = [
@@ -396,15 +474,39 @@ export default function Home() {
     { key: "admin", label: "Admin" },
   ];
 
-  const renderLogin = () => {
-    switch (activeRole) {
-      case "satici":
-        return <SaticiLogin />;
-      case "admin":
-        return <AdminLogin />;
-      default:
-        return null;
-    }
+  const renderContent = () => {
+    if (view === "register") return <SaticiRegister setView={setView} />;
+
+    if (view === "login")
+      return (
+        <>
+          {/* Switch Buttons */}
+          <div className="flex gap-6 mt-6 w-full max-w-md justify-center">
+            {roles.map((role) => (
+              <button
+                key={role.key}
+                onClick={() => setActiveRole(role.key)}
+                className={`pb-2 px-4 text-lg font-medium transition-all cursor-pointer duration-300 ${
+                  activeRole === role.key
+                    ? "border-b-4 border-green-600"
+                    : "border-b-4 border-gray-300"
+                }`}
+              >
+                {role.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Login Form */}
+          <div className="w-full">
+            {activeRole === "satici" ? (
+              <SaticiLogin setView={setView} />
+            ) : (
+              <AdminLogin />
+            )}
+          </div>
+        </>
+      );
   };
 
   return (
@@ -413,25 +515,7 @@ export default function Home() {
         <img src={mescidaglogo} alt="logo" className="h-16" />
       </nav>
 
-      {/* Switch Buttons */}
-      <div className="flex gap-6 mt-6 w-full max-w-md justify-center">
-        {roles.map((role) => (
-          <button
-            key={role.key}
-            onClick={() => setActiveRole(role.key)}
-            className={`pb-2 px-4 text-lg font-medium transition-all cursor-pointer duration-300 ${
-              activeRole === role.key
-                ? "border-b-4 border-green-600"
-                : "border-b-4 border-gray-300"
-            }`}
-          >
-            {role.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Login Form */}
-      <div className="w-full">{renderLogin()}</div>
+      {renderContent()}
     </div>
   );
 }
