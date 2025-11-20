@@ -1,3 +1,4 @@
+import { ToastContainer } from "react-toastify";
 import React, { useEffect } from "react";
 import {
   Navigate,
@@ -8,7 +9,6 @@ import {
   useNavigate,
 } from "react-router-dom";
 import Home from "../pages/home/home";
-import { ToastContainer } from "react-toastify";
 import Imampage from "../pages/imam/imampage";
 import Saticipage from "../pages/satici/saticipage";
 import Adminpage from "../pages/admin/adminpage";
@@ -120,7 +120,6 @@ const Mainrouter = () => {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={1000} />
       <Routes>
         <Route path="/" element={<Home />} />
 

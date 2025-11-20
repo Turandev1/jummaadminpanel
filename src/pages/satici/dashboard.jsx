@@ -1,3 +1,4 @@
+import { toast } from "react-toastify";
 import React, { useEffect, useRef, useState } from "react";
 import { Camera } from "lucide-react";
 import useAuth from "../../redux/authredux";
@@ -6,7 +7,7 @@ import { logout, setauthdata } from "../../redux/store";
 import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import api from "../../utils/axiosclient";
-import { toast } from "react-toastify";
+import { fonts } from "../../../fonts";
 
 // PhotoPicker.jsx
 
@@ -166,6 +167,12 @@ const UPLOAD_PRESET = "testpreset";
 const Dashboard = () => {
   const { user, accessToken } = useAuth();
   const [editable, setEditable] = useState(false);
+  const [step, setStep] = useState(
+    localStorage.getItem("verificationSent") ? "code" : "email"
+  );
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const [showpicker, setshowpicker] = useState(false);
   const [previewModal, setPreviewModal] = useState({
@@ -180,7 +187,146 @@ const Dashboard = () => {
     phone: user?.phone || "",
     dogumtarixi: user?.dogumtarixi || "",
     marketname: user?.market?.ad || "",
+    vöen: user?.vöen || "",
   });
+
+  const sendEmailCode = async () => {
+    if (!email.includes("@")) {
+      return toast.error("Düzgün email yazın.");
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await api.post(API_URLS.SATICI.SENDVERIFYCODE, {
+        email,
+      });
+
+      const data = res.data;
+      if (data.success) {
+        localStorage.setItem("verificationSent", "true");
+        toast.success("Kod email ünvanınıza göndərildi.", { autoClose: 2000 });
+        setStep("code");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data, "Xəta baş verdi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resendEmailCode = async () => {
+    try {
+      setLoading(true);
+
+      const res = await api.post(API_URLS.SATICI.SENDVERIFYCODE, {
+        email: user?.email,
+      });
+
+      const data = res.data;
+      if (data.success) {
+        localStorage.setItem("verificationSent", "true");
+        toast.success("Kod email ünvanınıza göndərildi.", { autoClose: 2000 });
+        setStep("code");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data, "Xəta baş verdi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyEmailCode = async () => {
+    const fullCode = code.join("");
+
+    if (fullCode.length !== 6) {
+      return toast.error("Kodu tam daxil edin.");
+    }
+
+    try {
+      setLoading(true);
+
+      const userId = user.id || user._id;
+
+      const res = await api.post(API_URLS.SATICI.VERIFYEMAILCODE, {
+        id: userId,
+        code: fullCode,
+      });
+
+      const data = res.data;
+
+      if (data.success) {
+        toast.success("Email təsdiqləndi!");
+
+        // Redux ilə user məlumatını yenilə
+        dispatch(
+          setauthdata({
+            user: data.user,
+          })
+        );
+
+        localStorage.removeItem("verificationSent");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Xəta baş verdi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlecompeletation = async () => {
+    if (
+      !formData.ad ||
+      !formData.soyad ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.dogumtarixi ||
+      !formData.marketname ||
+      !formData.vöen
+    ) {
+      return toast.error("Zəhmət olmasa bütün sahələri doldurun.");
+    }
+
+    if (formData.vöen.length < 9) {
+      return toast.error("Düzgün vöen daxil edin");
+    }
+
+    try {
+      setLoading(true);
+      const userId = user.id || user._id;
+
+      const res = await api.patch(
+        API_URLS.SATICI.COMPLETEACCOUNTSETUP,
+        {
+          id: userId,
+          ...formData,
+        },
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      const data = res.data;
+
+      if (data.success) {
+        dispatch(
+          setauthdata({
+            user: data.user,
+          })
+        );
+
+        toast.success("Hesab uğurla tamamlandı!");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.hata || "Xəta baş verdi.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInput = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -206,7 +352,7 @@ const Dashboard = () => {
       );
 
       const data = res.data;
-      console.log('data:',data)
+      console.log("data:", data);
       if (data.success) {
         dispatch(
           setauthdata({
@@ -258,11 +404,18 @@ const Dashboard = () => {
 
   return (
     <div className="p-8 w-full bg-gray-100 min-h-screen">
-      <div className="flex flex-row justify-between items-center px-2">
+      {user.inReview && (
+        <div style={{fontFamily:fonts.meriendasemi}} className="bg-white p-4 rounded-3xl shadow-lg mb-14">
+          Hesabınız incələmədədir. İncələmə bitəndə satıcı hesabının
+          üstünlüklərindən yararlana biləcəksiniz. Səbriniz üçün minnəttarıq.
+        </div>
+      )}
+
+      <div className="flex flex-row justify-between items-center px-2 my-4">
         <h1 className="text-2xl font-semibold">Profilim</h1>
         <button
           onClick={() => dispatch(logout())}
-          className="border text-xl px-4 my-2 py-2 cursor-pointer duration-300 hover:rounded-full hover:bg-red-500 hover:border-red-500 hover:text-white"
+          className="border text-xl px-4 py-1 cursor-pointer duration-300 rounded-full hover:bg-red-500 hover:border-red-500 hover:text-white"
         >
           Hesabdan çıx
         </button>
@@ -288,7 +441,7 @@ const Dashboard = () => {
 
           <button
             onClick={() => setshowpicker(!showpicker)}
-            className="absolute bottom-6 left-24 bg-white p-4 rounded-full hover:scale-110 duration-200 shadow"
+            className="absolute bottom-6 left-24 bg-white p-4 cursor-pointer rounded-full hover:scale-110 duration-200 shadow"
           >
             <Camera size={20} />
           </button>
@@ -378,7 +531,18 @@ const Dashboard = () => {
             <ProfileField label="Soyad" value={user.soyad} />
             <ProfileField label="Email" value={user.email} />
             <ProfileField label="Telefon" value={user.phone} />
-            <ProfileField label="Doğum tarixi" value={user.dogumtarixi} />
+            <ProfileField
+              label="Doğum tarixi"
+              value={
+                user.dogumtarixi
+                  ? new Date(user.dogumtarixi).toLocaleDateString("az-AZ", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })
+                  : "----"
+              }
+            />
             <ProfileField label="Market adı" value={user.market?.ad} />
           </div>
         )}
@@ -396,9 +560,188 @@ const Dashboard = () => {
           />
         </div>
       )}
+
+      {!user.isActive && (
+        <div className="fixed inset-0 bg-gray-200 z-[99999] flex flex-col items-center p-6 overflow-y-auto">
+          {/* CONTAINER */}
+          <div className="text-center mb-8 rounded-2xl w-full bg-white shadow-lg py-4">
+            <h1 className="text-2xl font-bold text-gray-800">
+              Hesabınız Aktiv Deyil
+            </h1>
+            <p className="text-gray-600 mt-2 text-sm">
+              Zəhmət olmasa aşağıdakı addımları tamamlayın.
+            </p>
+          </div>
+          <div className="min-w-xl w-full mt-4 px-8 grid grid-cols-2 gap-x-8">
+            {/* HEADER */}
+
+            {/* EMAIL DOĞRULAMA BÖLÜMÜ */}
+            {!user.isVerified && (
+              <div className="bg-white rounded-2xl shadow-lg px-6 py- flex flex-col items-center border">
+                {step === "email" && (
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      Email doğrulaması
+                    </h2>
+
+                    <p className="text-gray-600 text-md mt-2 mb-4 text-center">
+                      Email ünvanınızı daxil edin.Qeydiyyat zamanı istifadə
+                      etdiyiniz emaili yazın.
+                    </p>
+
+                    <form autoComplete="on" className="w-full">
+                      <input
+                        type="email"
+                        name="email"
+                        autoComplete="email"
+                        className="border w-full px-4 py-2 rounded-lg mt-3"
+                        placeholder="Emaili daxil edin"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </form>
+
+                    <button
+                      onClick={sendEmailCode}
+                      className="w-full mt-4 cursor-pointer bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-800 transition"
+                    >
+                      {loading ? "Göndərilir..." : "Kodu Göndər"}
+                    </button>
+                  </div>
+                )}
+
+                {step === "code" && (
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      Email təsdiqi
+                    </h2>
+
+                    <p className="text-gray-600 text-sm mt-2 mb-4 text-center">
+                      Email ünvanınıza göndərilmiş <strong>6 rəqəmli</strong>{" "}
+                      kodu daxil edin.
+                    </p>
+
+                    <div className="flex gap-2 justify-center mt-6 mb-4">
+                      {code.map((c, i) => (
+                        <input
+                          key={i}
+                          maxLength={1}
+                          value={c}
+                          type="email"
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            if (!val) return;
+
+                            const newCode = [...code];
+                            newCode[i] = val;
+                            setCode(newCode);
+
+                            // sonraki inputa otomatik geç
+                            const next = document.getElementById(
+                              `code-${i + 1}`
+                            );
+                            if (next) next.focus();
+                          }}
+                          id={`code-${i}`}
+                          className="w-12 h-12 text-center text-xl border rounded-lg duration-300 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={verifyEmailCode}
+                      className="w-full bg-green-600 cursor-pointer text-white py-2 rounded-lg hover:bg-green-800 transition"
+                    >
+                      Doğrula
+                    </button>
+
+                    <button
+                      onClick={resendEmailCode}
+                      className="w-full mt-4 text-blue-600 cursor-pointer text-sm duration-300 transition-all hover:scale-125"
+                    >
+                      Kodu yenidən göndər
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* PROFİL TAMAMLAMA */}
+            {!user.isCompleted && (
+              <div className="bg-white rounded-2xl shadow-lg p-4">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Profil məlumatları
+                </h2>
+
+                <p className="text-gray-600 text-sm mt-2 mb-4">
+                  Satıcı hesabının aktivləşməsi üçün profil məlumatlarınızı
+                  tamamlayın.
+                </p>
+                <div className="gap-4">
+                  {[
+                    { label: "Ad", name: "ad", placeholder: "Ad" },
+                    { label: "Soyad", name: "soyad", placeholder: "Soyad" },
+                    { label: "Email", name: "email", placeholder: "Email" },
+                    { label: "Vöen", name: "vöen", placeholder: "Vöen" },
+                    {
+                      label: "Əlaqə nömrəsi",
+                      name: "phone",
+                      placeholder: "Əlaqə nömrəsi",
+                      type: "tel",
+                      pattern: "[0-9]{3}-[0-9]{3}-[0-9]{2}-",
+                    },
+                    {
+                      label: "Doğum tarixi",
+                      name: "dogumtarixi",
+                      type: "date",
+                      placeholder: "Doğum tarixi",
+                    },
+                    {
+                      label: "Market adı",
+                      name: "marketname",
+                      placeholder: "Marketin adı",
+                    },
+                  ].map((f) => (
+                    <div key={f.name} className="flex flex-col">
+                      <label className="text-sm text-gray-600 mt-2">
+                        {f.label}
+                      </label>
+                      <input
+                        type={f.type || "text"}
+                        name={f.name}
+                        value={formData[f.name]}
+                        required
+                        onChange={handleInput}
+                        className="border rounded-md px-3 py-2"
+                        pattern={f.pattern || ""}
+                        placeholder={f.placeholder || ""}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={handlecompeletation}
+                  className="w-full mt-6 bg-orange-500 cursor-pointer text-white py-2 rounded-lg hover:bg-green-800 hover:text-xl duration-300 transition-all h-12"
+                >
+                  {loading ? "Göndərilir" : "Göndər"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+const Field = ({ label, value }) => (
+  <div className="flex flex-col">
+    <span className="text-gray-500 text-sm">{label}</span>
+    <span className="font-medium text-gray-800 border rounded-md px-3 py-2 bg-gray-100">
+      {value || "—"}
+    </span>
+  </div>
+);
 
 /* Bilesen: Tek bilgi satiri */
 const ProfileField = ({ label, value }) => (

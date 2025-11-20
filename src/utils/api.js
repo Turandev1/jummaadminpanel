@@ -1,6 +1,6 @@
-// export const API_BASE_URL = "http://localhost:5000";
-export const API_BASE_URL = "https://jummabackendapi.onrender.com";
-export const SATICIENDPOINT ="http://localhost:5000/webapi/satici";
+export const API_BASE_URL = "http://localhost:5000";
+// export const API_BASE_URL = "https://jummabackendapi.onrender.com";
+export const SATICIENDPOINT = "http://localhost:5000/webapi/satici";
 
 export const API_URLS = {
   IMAM: {
@@ -44,5 +44,8 @@ export const API_URLS = {
     EDITACCOUNT: `${API_BASE_URL}/webapi/satici/edit-account`,
     MEHSULQOY: `${API_BASE_URL}/webapi/satici/mehsul-qoy`,
     GETPRODUCTS: `${API_BASE_URL}/webapi/satici/getproducts`,
+    SENDVERIFYCODE: `${API_BASE_URL}/webapi/satici/sendverifycode`,
+    VERIFYEMAILCODE: `${API_BASE_URL}/webapi/satici/verifyemailcode`,
+    COMPLETEACCOUNTSETUP: `${API_BASE_URL}/webapi/satici/complete_account_setup`,
   },
 };

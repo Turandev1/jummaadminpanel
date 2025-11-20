@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { fonts } from "../../../fonts";
+import useAuth from "../../redux/authredux";
 
 // renk paleti
 const colors = ["#00C49F", "#FF8042", "#0088FE", "#FFBB28"];
@@ -39,6 +40,19 @@ const Saticipage = () => {
   const [productSalesData, setproductSalesData] = useState([]);
   const totalSales = productSalesData.reduce((sum, p) => sum + p.value, 0);
   const totalRevenue = totalSales * 10; // örnek hesaplama (backendden alınacak)
+  const [width, setWidth] = useState(window.innerWidth);
+  const { user } = useAuth();
+  
+  
+  
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     setmonthlysalesamount(exampleMonthlySales);
@@ -142,6 +156,20 @@ const Saticipage = () => {
           </tbody>
         </table>
       </div>
+      {user.inReview && (
+        <div
+          className="fixed top-0 sm:left-64 inset-0 px-8 bg-black/50 flex items-center justify-center"
+          style={{ width: width - "256px" }}
+        >
+          <div
+            style={{ fontFamily: fonts.meriendasemi }}
+            className="bg-white p-4 rounded-3xl shadow-lg mb-14 max-w-4xl"
+          >
+            Hesabınız incələmədədir. İncələmə bitəndə satıcı hesabının
+            üstünlüklərindən yararlana biləcəksiniz. Səbriniz üçün minnəttarıq.
+          </div>
+        </div>
+      )}
     </div>
   );
 };

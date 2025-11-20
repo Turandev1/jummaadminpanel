@@ -56,7 +56,9 @@ const SaticiRegister = ({ setView }) => {
       setView("login");
     } catch (error) {
       console.error(error);
-      toast.error("Qeydiyyat zamanı xəta baş verdi");
+      toast.error(
+        error.response?.data?.hata || "Qeydiyyat zamanı xəta baş verdi"
+      );
     }
   };
 
@@ -203,6 +205,7 @@ const SaticiLogin = ({ setView }) => {
       );
       const data = res.data;
 
+      toast.success(`Giriş uğurludur. Xoş gəldin ${data?.user?.ad}`);
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("role", data.user.role);
 
@@ -215,7 +218,6 @@ const SaticiLogin = ({ setView }) => {
       );
 
       navigate("/satici");
-      toast.success("Giriş uğurludur");
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data?.hata || "Giriş başarısız!");

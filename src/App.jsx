@@ -10,7 +10,6 @@ import { initAuth } from "./utils/authservice";
 
 // fonts.js
 
-
 function App() {
   const { logout } = useAuth();
   const dispatch = useDispatch();
@@ -24,9 +23,19 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Mainrouter />
-    </BrowserRouter>
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        style={{ zIndex: 200000 }}
+      />
+
+      <BrowserRouter>
+        <Mainrouter />
+      </BrowserRouter>
+    </>
   );
 }
 
