@@ -404,13 +404,6 @@ const Dashboard = () => {
 
   return (
     <div className="p-8 w-full bg-gray-100 min-h-screen">
-      {user.inReview && (
-        <div style={{fontFamily:fonts.meriendasemi}} className="bg-white p-4 rounded-3xl shadow-lg mb-14">
-          Hesabınız incələmədədir. İncələmə bitəndə satıcı hesabının
-          üstünlüklərindən yararlana biləcəksiniz. Səbriniz üçün minnəttarıq.
-        </div>
-      )}
-
       <div className="flex flex-row justify-between items-center px-2 my-4">
         <h1 className="text-2xl font-semibold">Profilim</h1>
         <button
@@ -486,6 +479,7 @@ const Dashboard = () => {
               { label: "Ad", name: "ad" },
               { label: "Soyad", name: "soyad" },
               { label: "Email", name: "email" },
+              { label: "Vöen", name: "vöen" },
               {
                 label: "Əlaqə nömrəsi",
                 name: "phone",
@@ -526,10 +520,11 @@ const Dashboard = () => {
           </div>
         ) : (
           /* READ MODE (Görüntüleme modu) */
-          <div className="grid grid-cols-3 text-sm gap-y-3">
+          <div className="grid grid-cols-2 text-sm gap-y-5">
             <ProfileField label="Ad" value={user.ad} />
             <ProfileField label="Soyad" value={user.soyad} />
             <ProfileField label="Email" value={user.email} />
+            <ProfileField label="Vöen" value={user.vöen} />
             <ProfileField label="Telefon" value={user.phone} />
             <ProfileField
               label="Doğum tarixi"

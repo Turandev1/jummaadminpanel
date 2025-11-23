@@ -318,7 +318,7 @@ const SaticiLogin = ({ setView }) => {
           <button
             type="button"
             onClick={() => setView("register")}
-            className="text-green-600 cursor-pointer font-semibold hover:text-green-700 hover:underline hover:scale-105 transition-all"
+            className="text-green-600 cursor-pointer font-semibold hover:text-green-800 hover:scale-110 transition-all"
           >
             Qeydiyyatdan keç
           </button>

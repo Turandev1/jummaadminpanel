@@ -5,18 +5,67 @@ import api from "../../utils/axiosclient";
 import { API_URLS } from "../../utils/api";
 import useAuth from "../../redux/authredux";
 import { toast } from "react-toastify";
-import { fonts } from "../../../fonts";
-import { useEffect } from "react";
+import axios from "axios";
+
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
+const UPLOAD_PRESET = "testpreset";
+
+const subcategoriesMap = {
+  qida: [
+    "Süd və süd məhsulları",
+    "Ət və ət məhsulları",
+    "Dəniz məhsulları",
+    "Un məmulatları",
+    "Şirniyyat",
+    "Quru qidalar",
+    "İçkilər",
+    "Hazır yeməklər,yarımfabrikatlar",
+    "Digər",
+  ],
+  shexsibaxim: [
+    "Dəri baxımı",
+    "Qadın baxım məhsulları",
+    "Dezodorant və Ətirlər",
+    "Saç baxımı",
+    "Gigiyena",
+    "Üz və bədən baxımı",
+    "Hamam məhsulları",
+    "Digər",
+  ],
+  temizlikmehsullari: [
+    "Yuyucu vasitələr",
+    "Təmizlik bezləri",
+    "Otaq ətirləri",
+    "Digər",
+  ],
+  islamieshyavekitablar: [
+    "Dini kitablar",
+    "Səccadələr",
+    "Təsbehlər",
+    "Geyimlər",
+    "Hədiyyəlik",
+    "Digər",
+  ],
+  ushaqmehsullari: [
+    "Oyuncaqlar",
+    "Uşaq qidası",
+    "Təmizlik vasitələri",
+    "Uşaq geyimi",
+    "Digər",
+  ],
+};
+
 const AddMehsul = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    content: "",
     category: "",
     subcategory: "",
     price: "",
     stock: "",
-    features: "",
+    brand: "",
+    ceki: "",
+    olcuvahidi: "",
   });
   const { user } = useAuth();
   const [images, setImages] = useState([]); // seçilen resimleri burada tutacağız
@@ -24,17 +73,8 @@ const AddMehsul = () => {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
   const dropRef = useRef(null);
-
-  const [width, setWidth] = useState(window.innerWidth);
-
-  useEffect(() => {
-    const handleResize = () => setWidth(window.innerWidth);
-
-    window.addEventListener("resize", handleResize);
-
-    // Cleanup
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const [uploading, setUploading] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -48,7 +88,13 @@ const AddMehsul = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      // kateqoriya dəyişəndə alt kateqoriya sıfırlansın
+      ...(name === "category" && { subcategory: "" }),
+    }));
   };
 
   const handleDrop = (e) => {
@@ -84,41 +130,106 @@ const AddMehsul = () => {
     setModalImage(null);
   };
 
+  const uploadFileToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    try {
+      const res = await axios.post(CLOUDINARY_URL, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      return {
+        public_id: res.data.public_id,
+        secure_url: res.data.secure_url,
+        original_filename: res.data.original_filename,
+      };
+    } catch (error) {
+      console.error("Cloudinary error:", error);
+      toast.error("Şəkil yüklənmədi");
+      return null;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // if (
-    //   !formData.name ||
-    //   !formData.description ||
-    //   !formData.price ||
-    //   !formData.stock ||
-    //   !formData.content ||
-    //   !formData.features
-    // )
-    //   return toast.error("Lazımi bütün sahələri doldurun");
+    setUploading(true);
+    setSending(false);
+
+    // 1) Şəkillər yüklənir
+    const uploadedImages = await Promise.all(
+      images.map((img) => uploadFileToCloudinary(img))
+    );
+
+    setUploading(false);
+
+    const validImages = uploadedImages.filter(Boolean);
+    if (!validImages.length && images.length > 0) {
+      toast.error("Heç bir şəkil Cloudinary-ə yüklənmədi");
+      return;
+    }
+
+    const formatteddescription = formData.description
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0)
+      .map(
+        (item) => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()
+      );
+
+    // 2) Backend-ə məlumat göndərilir
+    setSending(true);
 
     const userId = user.id || user._id;
+
     try {
       const res = await api.post(API_URLS.SATICI.MEHSULQOY, {
         id: userId,
         ad: user.ad,
         soyad: user.soyad,
         email: user.email,
-        mehsuladi: formData.name,
-        aciqlama: formData.description,
-        terkibi: formData.content,
+        marketname: user.market?.ad,
+        mehsuladi:
+          formData.name.charAt(0).toUpperCase() +
+          formData.name.slice(1).toLowerCase(),
+        aciqlama: formatteddescription,
         kateqoriya: formData.category,
         altkateqoriya: formData.subcategory,
         depo: formData.stock,
         qiymet: formData.price,
-        ozellikler: formData.features,
+        brand:
+          formData.brand.charAt(0).toUpperCase() +
+          formData.brand.slice(1).toLowerCase(),
+        olcuvahidi: formData.olcuvahidi,
+        cekisi: formData.ceki,
+        productphotos: validImages,
       });
+
+      setSending(false);
 
       if (res.data.success) {
         toast.success("Məhsul uğurla yaradıldı");
+        setFormData({
+          name: "",
+          description: "",
+          category: "",
+          subcategory: "",
+          price: "",
+          stock: "",
+          brand: "",
+          ceki: "",
+          olcuvahidi: "",
+        });
+
+        setImages([]);
+      } else {
+        toast.error("API cavabı success = false");
       }
-      console.log("res:", res.data);
     } catch (error) {
-      console.error(error);
+      console.error("API error:", error);
+      toast.error("Məhsul əlavə olunarkən xəta baş verdi");
+      setSending(false);
     }
   };
 
@@ -138,7 +249,7 @@ const AddMehsul = () => {
             value={formData.name}
             onChange={handleChange}
             placeholder="Məhsulun adını yazın"
-            className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+            className="w-full border capitalize border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
             required
           />
         </div>
@@ -151,11 +262,25 @@ const AddMehsul = () => {
             value={formData.description}
             onChange={handleChange}
             placeholder="Məhsul haqqında açıqlama"
-            className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+            className="w-full border capitalize border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
             rows={3}
             required
           />
         </div>
+
+        {/* terkibi */}
+        {/* <div>
+          <label className="block text-gray-700 mb-1">Tərkibi</label>
+          <textarea
+            name="terkibi"
+            value={formData.terkibi}
+            onChange={handleChange}
+            placeholder="Məhsulun tərkibini yazın. Vergüllə ayırın."
+            rows={3}
+            required
+            className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+          ></textarea>
+        </div> */}
 
         {/* Kategori / Alt kategori */}
         <div className="grid grid-cols-2 gap-4">
@@ -165,26 +290,82 @@ const AddMehsul = () => {
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2"
+              className="w-full border border-gray-300 cursor-pointer rounded-md p-2 outline-none"
               required
             >
               <option value="">Kateqoriya seçin</option>
-              <option value="gida">Qida</option>
-              <option value="icecek">İçəcək</option>
-              <option value="aksesuar">Aksesuar</option>
-              <option value="digər">Digər</option>
+              <option value="qida">Qida</option>
+              <option value="shexsibaxim">Şəxsi baxım</option>
+              <option value="temizlikmehsullari">Təmizlik məhsulları</option>
+              <option value="islamieshyavekitablar">
+                İslami əşya və kitablar
+              </option>
+              <option value="ushaqmehsullari">Uşaq məhsulları</option>
             </select>
           </div>
           <div>
             <label className="block text-gray-700 mb-1">Alt Kateqoriya</label>
-            <input
-              type="text"
+            <select
               name="subcategory"
               value={formData.subcategory}
               onChange={handleChange}
-              placeholder="Alt kategori (opsiyonel)"
-              className="w-full border border-gray-300 rounded-md p-2"
+              className="w-full border border-gray-300 cursor-pointer rounded-md p-2 outline-none"
+              disabled={!subcategoriesMap[formData.category]} // kateqoriya seçilməyibsə, select disable olsun
+            >
+              <option value="">Alt kateqoriya seçin</option>
+
+              {/* seçilmiş kateqoriyaya uyğun alt kateqoriləri göstəririk */}
+              {subcategoriesMap[formData.category]?.map((sub, index) => (
+                <option key={index} value={sub}>
+                  {sub}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* miqdar/ceki */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* <div>
+            <label className="block text-gray-700 mb-1">Miqdar</label>
+            <input
+              type="number"
+              name="miqdar"
+              value={formData.miqdar}
+              onChange={handleChange}
+              placeholder="Məhsulun miqdarını yazın"
+              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+              required
             />
+          </div> */}
+          <div>
+            <label className="block text-gray-700 mb-1">Çəki</label>
+            <input
+              type="number"
+              name="ceki"
+              value={formData.ceki}
+              onChange={handleChange}
+              placeholder="Məhsulun kütləsi"
+              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-1">Ölçü vahidi</label>
+            <select
+              name="olcuvahidi"
+              value={formData.olcuvahidi}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-md p-2 outline-none cursor-pointer"
+              required
+            >
+              <option value="">Ölçü vahidini seç</option>
+              <option value="eded">Ədəd</option>
+              <option value="kq">Kiloqram</option>
+              <option value="q">Qram</option>
+              <option value="l">Litr</option>
+              <option value="ml">Millilitr</option>
+            </select>
           </div>
         </div>
 
@@ -214,20 +395,32 @@ const AddMehsul = () => {
               required
             />
           </div>
+          {/* <div>
+            <label className="block text-gray-700 mb-1">Məzənnə</label>
+            <select
+              name="olcuvahidi"
+              value={formData.olcuvahidi}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-md p-2 outline-none cursor-pointer"
+              required
+            >
+              <option value="">Məzənnə seç</option>
+              <option value="AZN">AZN</option>
+              <option value="USD">USD</option>
+            </select>
+          </div> */}
         </div>
 
-        {/* Özellikler */}
+        {/* brand */}
         <div>
-          <label className="block text-gray-700 mb-1">
-            Özəlliklər (vergüllə ayır)
-          </label>
+          <label className="block text-gray-700 mb-1">Brand (Varsa)</label>
           <input
             type="text"
-            name="features"
-            value={formData.features}
+            name="brand"
+            value={formData.brand}
             onChange={handleChange}
-            placeholder="Məs: orqanik, qlütensiz, təzə"
-            className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+            placeholder="Məhsulun brandini qeyd edin və ya boş qoyun"
+            className="w-full capitalize border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
           />
         </div>
 
@@ -310,10 +503,19 @@ const AddMehsul = () => {
         {/* Submit */}
         <button
           type="submit"
-          onClick={handleSubmit}
-          className="bg-indigo-500 text-white cursor-pointer text-xl font-semibold py-2 px-4 rounded-md hover:bg-indigo-800 hover:scale-110 transition-all"
+          disabled={uploading || sending}
+          className={`bg-indigo-500 text-white text-xl font-semibold py-2 px-4 rounded-md 
+    transition-all ${
+      uploading || sending
+        ? "opacity-50 cursor-not-allowed"
+        : "hover:bg-indigo-800 hover:scale-110 cursor-pointer"
+    }`}
         >
-          Məhsulu əlavə et
+          {uploading
+            ? "Şəkillər yüklənir..."
+            : sending
+            ? "Göndərilir..."
+            : "Məhsulu əlavə et"}
         </button>
       </form>
 
@@ -335,21 +537,6 @@ const AddMehsul = () => {
           >
             ×
           </button>
-        </div>
-      )}
-
-      {user.inReview && (
-        <div
-          className="fixed top-0 sm:left-64 inset-0 px-8 bg-black/50 flex items-center justify-center"
-          style={{ width: width - "256px" }}
-        >
-          <div
-            style={{ fontFamily: fonts.meriendasemi }}
-            className="bg-white p-4 rounded-3xl shadow-lg mb-14 max-w-4xl"
-          >
-            Hesabınız incələmədədir. İncələmə bitəndə satıcı hesabının
-            üstünlüklərindən yararlana biləcəksiniz. Səbriniz üçün minnəttarıq.
-          </div>
         </div>
       )}
     </div>

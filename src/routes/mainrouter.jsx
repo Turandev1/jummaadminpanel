@@ -26,6 +26,7 @@ import Sifarisler from "../pages/satici/sifarisler";
 import Imams from "../pages/admin/imams";
 import AddMehsul from "../pages/satici/addmehsul";
 import Mehsullarr from "../pages/satici/mehsullarr";
+import DailyCounter from "../pages/admin/dailycounter";
 
 const DashboardLayout = () => {
   return (
@@ -70,6 +71,7 @@ export const AdminRoutes = () => (
       <Route path="iane" element={<Iane />} />
       <Route path="mescids" element={<Imams />} />
       <Route path="ianeqoy" element={<Ianeyerlestir />} />
+      <Route path="dailycounter" element={<DailyCounter />} />
       {/* admin alt sayfalar */}
     </Route>
   </Routes>
