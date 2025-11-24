@@ -277,7 +277,7 @@ const DailyCounter = () => {
 
       {/* Header */}
       <header className="text-center text-gray-800 border-b-2 border-gray-200 pb-4 mb-8 text-3xl font-extrabold flex items-center justify-center gap-3">
-        <Trophy size={35} className="text-yellow-500" /> Performans Takip Paneli
+        <Trophy size={35} className="text-yellow-500" /> Performans İzləmə Paneli
       </header>
 
       {/* Ana Grid Yapısı: Sol (Sayaç) ve Sağ (Tarih) */}
@@ -303,7 +303,7 @@ const DailyCounter = () => {
             {dailyGoal > 0 && (
               <>
                 <p className="text-sm text-gray-600 mb-2">
-                  Hedefe İlerleme: {currentCount} / {dailyGoal}
+                  Hədəfə İlərləmə: {currentCount} / {dailyGoal}
                 </p>
                 <div className="w-11/12 mx-auto mb-6 h-3 bg-gray-200 rounded-full overflow-hidden">
                   <div
@@ -345,7 +345,7 @@ const DailyCounter = () => {
           <div className="bg-blue-50 p-5 rounded-xl border border-blue-200 flex justify-between items-center shadow-sm">
             <div className="flex items-center gap-3">
               <Target size={24} className="text-blue-600" />
-              <span className="font-semibold text-blue-800">Günlük Hedef:</span>
+              <span className="font-semibold text-blue-800">Günlük Hədəf:</span>
               {isEditingGoal ? (
                 <input
                   type="number"
@@ -459,7 +459,7 @@ const DailyCounter = () => {
                         ></div>
                       </div>
                       <span className="text-xs font-semibold text-gray-500">
-                        % {Math.round(dayProgress)} (Hedef: {dayGoal})
+                        % {Math.round(dayProgress)} (Hədəf: {dayGoal})
                       </span>
                     </div>
                   )}
@@ -474,7 +474,7 @@ const DailyCounter = () => {
       <div className="bg-white p-6 rounded-xl shadow-lg border border-indigo-700">
         <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
           <TrendingUp size={24} className="mr-2 text-indigo-500" />
-          Son {LAST_DAYS_TO_SHOW} Günlük Performans Özeti
+          Son {LAST_DAYS_TO_SHOW} Günlük Performans Özəti
         </h3>
 
         {dailyGoal > 0 ? (
@@ -484,7 +484,7 @@ const DailyCounter = () => {
               <div className="flex justify-between items-center mb-1">
                 <span className="text-base font-medium text-gray-700 flex items-center">
                   <CheckCircle size={18} className="text-green-500 mr-1" />
-                  Hedef Tamamlama Oranı
+                  Hədəf Tamamlama Faizi
                   <span className="ml-2 text-sm text-green-600 font-bold">
                     ({performanceMetrics.daysGoalMet} /{" "}
                     {performanceMetrics.totalActiveDays} Gün)
@@ -507,7 +507,7 @@ const DailyCounter = () => {
               <div className="flex justify-between items-center mb-1">
                 <span className="text-base font-medium text-gray-700 flex items-center">
                   <Award size={18} className="text-yellow-500 mr-1" />
-                  Ekstra Başarı Günleri Oranı
+                  Ekstra Uğur Günləri Faizi
                   <span className="ml-2 text-sm text-yellow-600 font-bold">
                     ({performanceMetrics.daysExceededGoal} /{" "}
                     {performanceMetrics.totalActiveDays} Gün)
