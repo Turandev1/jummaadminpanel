@@ -6,9 +6,8 @@ import api from "../../utils/axiosclient";
 // ... (mevcut import'lar)
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs from "dayjs";
-import { renderDigitalClockTimeView, renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
+
 import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
 
 const Imams = () => {
@@ -101,7 +100,7 @@ const Imams = () => {
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-3xl mx-auto my-10">
-      <h2 className="text-2xl font-bold text-center mb-4">İmam Hesapları</h2>
+      <h2 className="text-2xl font-bold text-center mb-4">Məscidlər</h2>
 
       {mescids.map((mescid) => {
         const isEditing = editId === mescid._id;
@@ -118,9 +117,7 @@ const Imams = () => {
                 <p className="font-semibold text-lg">
                   Imam:{mescid.name || ""} {mescid.surname || ""}
                 </p>
-                <p className="text-base text-gray-600">
-                  Email:{mescid.email || ""}
-                </p>
+
                 <p className="text-base text-gray-600">
                   Mescid:{mescid.mescidname || ""} — Unvan:
                   {mescid.mescid?.location || ""}
@@ -142,7 +139,7 @@ const Imams = () => {
                           )
                         );
                         // Backend'e PATCH isteği
-                        await axios.patch(
+                        await api.patch(
                           `${API_URLS.ADMIN.ACTIVATEMESCID}/${mescid._id}`,
                           {
                             isActive: updatedStatus,
@@ -178,29 +175,29 @@ const Imams = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      İsim
+                      Ad
                     </label>
                     <input
                       value={editData.name || ""}
                       onChange={(e) => handleChange(e, "name")}
                       placeholder="İsim"
-                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none duration-300 transition-all ease-in-out"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Soyisim
+                      Soyad
                     </label>
                     <input
                       value={editData.surname || ""}
                       onChange={(e) => handleChange(e, "surname")}
                       placeholder="Soyisim"
-                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none duration-300 transition-all ease-in-out"
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1">
+                  {/* <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
                       E-posta
                     </label>
@@ -211,17 +208,17 @@ const Imams = () => {
                       type="email"
                       className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
                     />
-                  </div>
+                  </div> */}
 
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-700">
-                      Camii Adı
+                      Məscid adı
                     </label>
                     <input
                       value={editData.mescidname || ""}
                       onChange={(e) => handleChange(e, "mescidname")}
                       placeholder="Camii Adı"
-                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none duration-300 transition-all ease-in-out"
                     />
                   </div>
 
@@ -233,7 +230,7 @@ const Imams = () => {
                       value={editData.mescid?.location || ""}
                       onChange={(e) => updateLocation(e.target.value)}
                       placeholder="Konum"
-                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
+                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none duration-300 transition-all ease-in-out"
                     />
                   </div>
 
@@ -244,7 +241,7 @@ const Imams = () => {
                     {/* ⏰ Azan Saati (TimePicker) */}
                     <div className="flex flex-col gap-1">
                       <label className="text-sm font-medium text-gray-700">
-                        Azan Saati
+                        Azan Saatı
                       </label>
                       <MobileTimePicker
                         minutesStep={1}
@@ -259,14 +256,13 @@ const Imams = () => {
                           textField: { size: "small", fullWidth: true },
                         }}
                         ampm={false} // 24 saat formatı için
-                  
                       />
                     </div>
 
                     {/* ⏰ Xutbe Saati (TimePicker) */}
                     <div className="flex flex-col gap-1">
                       <label className="text-sm font-medium text-gray-700">
-                        Xutbe Saati
+                        Xutbə Saatı
                       </label>
                       <MobileTimePicker
                         minutesStep={1}
@@ -287,7 +283,7 @@ const Imams = () => {
                     {/* ⏰ Namaz Saati (TimePicker) */}
                     <div className="flex flex-col gap-1">
                       <label className="text-sm font-medium text-gray-700">
-                        Namaz Saati
+                        Namaz Saatı
                       </label>
                       <MobileTimePicker
                         minutesStep={1}
