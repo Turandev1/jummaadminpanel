@@ -16,6 +16,7 @@ const Sidebar = () => {
       { to: "/admin/qeydiyyat", label: "Qeydiyyat" },
       { to: "/admin/mescids", label: "Mescidler" },
       { to: "/admin/ianeqoy", label: "Iane qoy" },
+      { to: "/admin/istifadecimesajlari", label: "Istifadəçi mesajlari" },
       { to: "/admin/dailycounter", label: "Sayaç" },
       // { to: "/admin/users", label: "İstifadəçilər" },
       // { to: "/admin/admins", label: "Adminlər" },

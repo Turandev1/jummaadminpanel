@@ -1,5 +1,5 @@
-// export const API_BASE_URL = "http://localhost:5000";
-export const API_BASE_URL = "https://jummabackendapi.onrender.com";
+export const API_BASE_URL = "http://localhost:5000";
+// export const API_BASE_URL = "https://jummabackendapi.onrender.com";
 export const SATICIENDPOINT = "http://localhost:5000/webapi/satici";
 
 export const API_URLS = {
@@ -34,6 +34,8 @@ export const API_URLS = {
     SETIANE: `${API_BASE_URL}/webapi/admin/setiane`,
     SATICISIGNUP: `${API_BASE_URL}/webapi/satici/saticisignup`,
     ADMINSIGNUP: `${API_BASE_URL}/webapi/admin/adminsignup`,
+    GETUSERMESSAGES: `${API_BASE_URL}/webapi/admin/getusermessages`,
+    MARK_AS_READ: `${API_BASE_URL}/webapi/admin/toggleisread`,
   },
   SATICI: {
     LOGIN: `${API_BASE_URL}/webapi/satici/login`,

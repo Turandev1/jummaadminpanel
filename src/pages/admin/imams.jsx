@@ -3,6 +3,13 @@ import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import useAuth from "../../redux/authredux";
 import api from "../../utils/axiosclient";
+// ... (mevcut import'lar)
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import dayjs from "dayjs";
+import { renderDigitalClockTimeView, renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
+import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
 
 const Imams = () => {
   const [editId, setEditId] = useState(null);
@@ -43,10 +50,17 @@ const Imams = () => {
     setEditData(mescid);
   };
 
+  // Mevcut handleChange'i koruyun.
   const handleChange = (e, field) => {
     setEditData((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
+  // Yeni: TimePicker'dan gelen DayJS objesini işlemek için
+  const handleTimeChange = (newTime, field) => {
+    // newTime DayJS objesidir. 'HH:mm' formatına çevirip state'e kaydediyoruz.
+    const formattedTime = newTime ? dayjs(newTime).format("HH:mm") : "";
+    setEditData((prev) => ({ ...prev, [field]: formattedTime }));
+  };
   // 💾 Kaydet (her alanı ayrı ayrı güncelle)
   const handleSave = async () => {
     try {
@@ -86,7 +100,7 @@ const Imams = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-3xl mx-auto mt-10">
+    <div className="flex flex-col gap-4 w-full max-w-3xl mx-auto my-10">
       <h2 className="text-2xl font-bold text-center mb-4">İmam Hesapları</h2>
 
       {mescids.map((mescid) => {
@@ -222,44 +236,75 @@ const Imams = () => {
                       className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
                     />
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">
-                      Azan Saati
-                    </label>
-                    <input
-                      value={editData.azan || ""}
-                      onChange={(e) => handleChange(e, "azan")}
-                      placeholder="Azan"
-                      type="time"
-                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
 
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">
-                      Xutbe Saati
-                    </label>
-                    <input
-                      value={editData.xutbe || ""}
-                      onChange={(e) => handleChange(e, "xutbe")}
-                      placeholder="Xutbe"
-                      type="time"
-                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
+                  <LocalizationProvider
+                    dateAdapter={AdapterDayjs}
+                    adapterLocale="tr"
+                  >
+                    {/* ⏰ Azan Saati (TimePicker) */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-sm font-medium text-gray-700">
+                        Azan Saati
+                      </label>
+                      <MobileTimePicker
+                        minutesStep={1}
+                        value={
+                          editData.azan ? dayjs(editData.azan, "HH:mm") : null
+                        }
+                        onChange={(newTime) =>
+                          handleTimeChange(newTime, "azan")
+                        }
+                        label="Azan Saati"
+                        slotProps={{
+                          textField: { size: "small", fullWidth: true },
+                        }}
+                        ampm={false} // 24 saat formatı için
+                  
+                      />
+                    </div>
 
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-700">
-                      Namaz Saati
-                    </label>
-                    <input
-                      value={editData.namaz || ""}
-                      onChange={(e) => handleChange(e, "namaz")}
-                      placeholder="Namaz"
-                      type="time"
-                      className="border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
+                    {/* ⏰ Xutbe Saati (TimePicker) */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-sm font-medium text-gray-700">
+                        Xutbe Saati
+                      </label>
+                      <MobileTimePicker
+                        minutesStep={1}
+                        value={
+                          editData.xutbe ? dayjs(editData.xutbe, "HH:mm") : null
+                        }
+                        onChange={(newTime) =>
+                          handleTimeChange(newTime, "xutbe")
+                        }
+                        label="Xutbe Saati"
+                        slotProps={{
+                          textField: { size: "small", fullWidth: true },
+                        }}
+                        ampm={false}
+                      />
+                    </div>
+
+                    {/* ⏰ Namaz Saati (TimePicker) */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-sm font-medium text-gray-700">
+                        Namaz Saati
+                      </label>
+                      <MobileTimePicker
+                        minutesStep={1}
+                        value={
+                          editData.namaz ? dayjs(editData.namaz, "HH:mm") : null
+                        }
+                        onChange={(newTime) =>
+                          handleTimeChange(newTime, "namaz")
+                        }
+                        label="Namaz Saati"
+                        slotProps={{
+                          textField: { size: "small", fullWidth: true },
+                        }}
+                        ampm={false}
+                      />
+                    </div>
+                  </LocalizationProvider>
                 </div>
 
                 <div className="flex justify-end mt-4 gap-2">

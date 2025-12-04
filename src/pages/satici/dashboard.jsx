@@ -7,7 +7,6 @@ import { logout, setauthdata } from "../../redux/store";
 import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import api from "../../utils/axiosclient";
-import { fonts } from "../../../fonts";
 
 // PhotoPicker.jsx
 
@@ -175,6 +174,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const [showpicker, setshowpicker] = useState(false);
+  const [iseditable, setiseditable] = useState(false);
   const [previewModal, setPreviewModal] = useState({
     open: false,
     image: "",
@@ -465,7 +465,10 @@ const Dashboard = () => {
           {!editable ? (
             <button
               className="bg-orange-500 cursor-pointer text-white px-4 py-1 rounded-md"
-              onClick={() => setEditable(true)}
+              onClick={() => {
+                setiseditable(false);
+                setEditable(true);
+              }}
             >
               Redaktə et
             </button>
@@ -487,7 +490,6 @@ const Dashboard = () => {
                 pattern: "[0-9]{3}-[0-9]{3}-[0-9]{2}-",
               },
               { label: "Doğum tarixi", name: "dogumtarixi", type: "date" },
-              { label: "Market adı", name: "marketname" },
             ].map((f) => (
               <div key={f.name} className="flex flex-col">
                 <label className="text-sm text-gray-600 mb-1">{f.label}</label>
@@ -502,10 +504,10 @@ const Dashboard = () => {
               </div>
             ))}
 
-            <div className="col-span-2 flex cursor-pointer justify-end gap-3 mt-4">
+            <div className="col-span-2 flex justify-end gap-3 mt-4">
               <button
                 onClick={() => setEditable(false)}
-                className="border px-4 py-2 rounded-md"
+                className="border px-4 py-2 cursor-pointer rounded-md"
               >
                 Ləğv et
               </button>
@@ -538,6 +540,70 @@ const Dashboard = () => {
                   : "----"
               }
             />
+          </div>
+        )}
+      </div>
+
+      {/* Market melumatlari */}
+
+      <div className="bg-white shadow-lg rounded-xl p-6 mt-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Market məlumatları</h2>
+
+          {!iseditable ? (
+            <button
+              className="bg-indigo-500 cursor-pointer text-white px-4 py-1 rounded-md"
+              onClick={() => {
+                setiseditable(true);
+                setEditable(false);
+              }}
+            >
+              Redaktə et
+            </button>
+          ) : null}
+        </div>
+
+        {/* EDIT MODE */}
+        {iseditable ? (
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: "Market adı", name: "marketname" },
+              { label: "Əsas ünvanı seçin", name: "unvan",placeholder:'' }
+
+
+            ].map((f) => (
+              <div key={f.name} className="flex flex-col">
+                <label className="text-sm text-gray-600 mb-1">{f.label}</label>
+                <input
+                  type={f.type || "text"}
+                  name={f.name}
+                  value={formData[f.name]}
+                  onChange={handleInput}
+                  className="border rounded-md px-3 py-2"
+                  pattern={f.pattern || ""}
+                />
+              </div>
+            ))}
+
+            <div className="col-span-2 flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => setiseditable(false)}
+                className="border px-4 py-2 cursor-pointer rounded-md"
+              >
+                Ləğv et
+              </button>
+
+              <button
+                onClick={handleSave}
+                className="bg-green-600 cursor-pointer text-white px-4 py-2 rounded-md"
+              >
+                Yadda saxla
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* READ MODE (Görüntüleme modu) */
+          <div className="grid grid-cols-2 text-sm gap-y-5">
             <ProfileField label="Market adı" value={user.market?.ad} />
           </div>
         )}
@@ -740,7 +806,7 @@ const Field = ({ label, value }) => (
 
 /* Bilesen: Tek bilgi satiri */
 const ProfileField = ({ label, value }) => (
-  <div className="flex flex-col">
+  <div className="flex flex-col border-b border-gray-300 pb-2">
     <span className="text-gray-500 text-lg">{label}</span>
     <span className="font-medium text-xl">{value || "----"}</span>
   </div>

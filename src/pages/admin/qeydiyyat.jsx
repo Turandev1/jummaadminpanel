@@ -22,7 +22,7 @@ const Mescidqeyd = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post(API_URLS.ADMIN.MESCIDQEYDET, {
+      const res = await api.post(API_URLS.ADMIN.MESCIDQEYDET, {
         name,
         surname,
         mescid,

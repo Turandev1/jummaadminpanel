@@ -64,7 +64,7 @@ const AddMehsul = () => {
     price: "",
     stock: "",
     brand: "",
-    ceki: "",
+    miqdar: "",
     olcuvahidi: "",
   });
   const { user } = useAuth();
@@ -202,7 +202,7 @@ const AddMehsul = () => {
           formData.brand.charAt(0).toUpperCase() +
           formData.brand.slice(1).toLowerCase(),
         olcuvahidi: formData.olcuvahidi,
-        cekisi: formData.ceki,
+        miqdari: formData.miqdar,
         productphotos: validImages,
       });
 
@@ -218,7 +218,7 @@ const AddMehsul = () => {
           price: "",
           stock: "",
           brand: "",
-          ceki: "",
+          miqdar: "",
           olcuvahidi: "",
         });
 
@@ -339,11 +339,11 @@ const AddMehsul = () => {
             />
           </div> */}
           <div>
-            <label className="block text-gray-700 mb-1">Çəki</label>
+            <label className="block text-gray-700 mb-1">Miqdar</label>
             <input
               type="number"
-              name="ceki"
-              value={formData.ceki}
+              name="miqdar"
+              value={formData.miqdar}
               onChange={handleChange}
               placeholder="Məhsulun kütləsi"
               className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
@@ -360,11 +360,11 @@ const AddMehsul = () => {
               required
             >
               <option value="">Ölçü vahidini seç</option>
-              <option value="eded">Ədəd</option>
-              <option value="kq">Kiloqram</option>
-              <option value="q">Qram</option>
-              <option value="l">Litr</option>
-              <option value="ml">Millilitr</option>
+              <option value="Ədəd">Ədəd</option>
+              <option value="Kq">Kiloqram</option>
+              <option value="Q">Qram</option>
+              <option value="L">Litr</option>
+              <option value="Ml">Millilitr</option>
             </select>
           </div>
         </div>
