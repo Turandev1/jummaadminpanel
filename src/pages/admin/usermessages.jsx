@@ -31,18 +31,22 @@ const Usermessages = () => {
     }
   };
 
-  const sendReply = async (id, userId) => {
+  const sendReply = async (message) => {
     try {
-      const res = await api.post(API_URLS.ADMIN.SEND_REPLY, {
-        messageId: id,
-        userId,
+      const res = await api.post(API_URLS.ADMIN.SENDRESPONSE, {
+        messageId: message._id,
+        userId: message.userId,
+        requestTitle: message.title,
+        requestBody: message.body,
         title: replyTitle,
         body: replyBody,
       });
 
       if (res.data.success) {
         setMessages((prev) =>
-          prev.map((m) => (m._id === id ? { ...m, cavabverildi: true } : m))
+          prev.map((m) =>
+            m._id === message._id ? { ...m, cavabverildi: true } : m
+          )
         );
 
         setReplyBody("");
@@ -149,7 +153,7 @@ const Usermessages = () => {
 
                 <button
                   disabled={!replyTitle.trim() || !replyBody.trim()}
-                  onClick={() => sendReply(message._id, message.userId)}
+                  onClick={() => sendReply(message)}
                   className={`px-5 py-2 rounded-lg font-medium cursor-pointer text-white transition ${
                     replyTitle.trim() && replyBody.trim()
                       ? "bg-green-600 hover:bg-green-700"
