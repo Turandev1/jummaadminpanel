@@ -284,8 +284,8 @@ const Dashboard = () => {
       !formData.email ||
       !formData.phone ||
       !formData.dogumtarixi ||
-      !formData.marketname ||
-      !formData.vöen
+      // !formData.vöen ||
+      !formData.marketname 
     ) {
       return toast.error("Zəhmət olmasa bütün sahələri doldurun.");
     }
@@ -633,10 +633,10 @@ const Dashboard = () => {
               Zəhmət olmasa aşağıdakı addımları tamamlayın.
             </p>
           </div>
-          <div className="min-w-xl w-full mt-4 px-8 grid grid-cols-2 gap-x-8">
+          <div className="max-w-3xl w-full mt-4 px-8 grid grid-cols-1 gap-x-8">
             {/* HEADER */}
 
-            {/* EMAIL DOĞRULAMA BÖLÜMÜ */}
+            {/* EMAIL DOĞRULAMA BÖLÜMÜ
             {!user.isVerified && (
               <div className="bg-white rounded-2xl shadow-lg px-6 py- flex flex-col items-center border">
                 {step === "email" && (
@@ -725,11 +725,11 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-            )}
+            )} */}
 
             {/* PROFİL TAMAMLAMA */}
             {!user.isCompleted && (
-              <div className="bg-white rounded-2xl shadow-lg p-4">
+              <div className="bg-white rounded-2xl shadow-lg p-4 min-w-2xl">
                 <h2 className="text-lg font-semibold text-gray-800">
                   Profil məlumatları
                 </h2>
@@ -743,7 +743,7 @@ const Dashboard = () => {
                     { label: "Ad", name: "ad", placeholder: "Ad" },
                     { label: "Soyad", name: "soyad", placeholder: "Soyad" },
                     { label: "Email", name: "email", placeholder: "Email" },
-                    { label: "Vöen", name: "vöen", placeholder: "Vöen" },
+                    { label: "Vöen", name: "vöen", placeholder: "Vöen(Məcburi deyil)" },
                     {
                       label: "Əlaqə nömrəsi",
                       name: "phone",
