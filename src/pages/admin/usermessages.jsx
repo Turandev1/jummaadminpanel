@@ -37,7 +37,7 @@ const Usermessages = () => {
         messageId: message._id,
         userId: message.userId,
         requestTitle: message.title,
-        requestBody: message.body,
+        requestBody: message.mesaj,
         title: replyTitle,
         body: replyBody,
       });
@@ -58,12 +58,16 @@ const Usermessages = () => {
     }
   };
 
+
+  const sortedMessages = [...messages].sort((a, b) => a.isRead - b.isRead);
+
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-3xl font-semibold mb-6">İstifadəçi Mesajları</h1>
 
       <div className="flex flex-col gap-5">
-        {messages.map((message) => (
+        {sortedMessages.map((message) => (
           <div
             key={message._id}
             className={`shadow-md rounded-xl p-5 border transition ${
