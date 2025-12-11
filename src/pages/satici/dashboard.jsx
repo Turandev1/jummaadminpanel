@@ -290,9 +290,7 @@ const Dashboard = () => {
       return toast.error("Zəhmət olmasa bütün sahələri doldurun.");
     }
 
-    if (formData.vöen.length < 9) {
-      return toast.error("Düzgün vöen daxil edin");
-    }
+
 
     try {
       setLoading(true);

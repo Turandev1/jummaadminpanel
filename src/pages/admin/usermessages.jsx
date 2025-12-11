@@ -43,6 +43,12 @@ const Usermessages = () => {
       });
 
       if (res.data.success) {
+        // 1. Önce seçili formu kapat
+        console.log("selectedMessage:", selectedMessage);
+        setSelectedMessage(null);
+        console.log("selectedMessage:", selectedMessage);
+
+        // 2. State’i güncelle
         setMessages((prev) =>
           prev.map((m) =>
             m._id === message._id ? { ...m, cavabverildi: true } : m
@@ -51,16 +57,13 @@ const Usermessages = () => {
 
         setReplyBody("");
         setReplyTitle("");
-        setSelectedMessage(null);
       }
     } catch (err) {
       console.log(err);
     }
   };
 
-
   const sortedMessages = [...messages].sort((a, b) => a.isRead - b.isRead);
-
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
