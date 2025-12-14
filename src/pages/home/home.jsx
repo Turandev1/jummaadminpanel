@@ -305,6 +305,16 @@ const SaticiLogin = ({ setView }) => {
             )}
           </button>
         </form>
+
+        <div className="flex flex-row justify-center my-4 gap-x-2">
+          <p>Şifrəni unutmusan?</p>
+          <button
+            onClick={() => navigate("resetpassword")}
+            className="text-green-600 font-semibold cursor-pointer hover:scale-110 duration-200 transition-all ease-in"
+          >
+            Parolu sıfırla
+          </button>
+        </div>
         {/* Divider */}
         <div className="flex items-center gap-3 my-6">
           <div className="flex-1 h-px bg-gray-600"></div>

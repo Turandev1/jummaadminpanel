@@ -28,6 +28,7 @@ import AddMehsul from "../pages/satici/addmehsul";
 import Mehsullarr from "../pages/satici/mehsullarr";
 import DailyCounter from "../pages/admin/dailycounter";
 import Usermessages from "../pages/admin/usermessages";
+import Resetpass from "../pages/home/resetpass";
 
 const DashboardLayout = () => {
   return (
@@ -126,7 +127,7 @@ const Mainrouter = () => {
     <>
       <Routes>
         <Route path="/" element={<Home />} />
-
+        <Route path="/resetpassword" element={<Resetpass />} />
         {/* Login olmuşsa paneline yönlendir */}
         <Route
           path="panel"

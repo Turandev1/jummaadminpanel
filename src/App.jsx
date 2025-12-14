@@ -1,4 +1,5 @@
 // src/App.jsx
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "react-toastify/ReactToastify.css";
 import Mainrouter from "./routes/mainrouter";
@@ -7,8 +8,6 @@ import { useEffect } from "react";
 import useAuth from "./redux/authredux";
 import { useDispatch } from "react-redux";
 import { initAuth } from "./utils/authservice";
-
-// fonts.js
 
 function App() {
   const { logout } = useAuth();
@@ -20,7 +19,7 @@ function App() {
       if (!ok) dispatch(logout());
     };
     kontrolet();
-  }, []);
+  }, []); // Bağımlılık dizisi boş olduğu için sadece mount edildiğinde çalışır
 
   return (
     <>

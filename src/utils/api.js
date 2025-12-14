@@ -53,5 +53,9 @@ export const API_URLS = {
     MEHSULEDIT: `${API_BASE_URL}/webapi/satici/mehsuledit`,
     TOGGLEPRODUCTSTATUS: `${API_BASE_URL}/webapi/satici/toggleproductstatus`,
     DELETEPRODUCT: `${API_BASE_URL}/webapi/satici/deleteproduct`,
+    SEND_CODE: `${API_BASE_URL}/webapi/satici/sendresetcode`,
+    VERIFY_CODE: `${API_BASE_URL}/webapi/satici/verifyresetcode`,
+    RESET_PASSWORD: `${API_BASE_URL}/webapi/satici/resetpassword`,
+    GET_ORDERS: `${API_BASE_URL}/webapi/satici/getorders`,
   },
 };
