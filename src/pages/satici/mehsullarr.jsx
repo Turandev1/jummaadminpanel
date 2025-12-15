@@ -13,7 +13,7 @@ const Mehsullarr = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [detailmodal, setdetailmodal] = useState(false);
-  const [toggleloading, settoggleloading] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
   // Function to fetch products
 
   const fetchProducts = useCallback(async () => {
@@ -37,7 +37,7 @@ const Mehsullarr = () => {
   }, [fetchProducts]);
 
   const handletogglestatus = async (id) => {
-    settoggleloading(true);
+    setTogglingId(id);
     try {
       const res = await api.patch(
         API_URLS.SATICI.TOGGLEPRODUCTSTATUS,
@@ -61,12 +61,12 @@ const Mehsullarr = () => {
             return mehsul;
           });
         });
-        settoggleloading(false);
+        setTogglingId(null);
       }
     } catch (error) {
       console.error(error);
     } finally {
-      settoggleloading(false);
+      setTogglingId(null);
     }
   };
   // --- Modal Handlers ---
@@ -127,10 +127,8 @@ const Mehsullarr = () => {
 
       {/* 5. Status (Toggle) - col-span-2 */}
       <div className="col-span-2 flex justify-center">
-        {toggleloading ? (
-          <div>
-            <Loader2 className="animate-spin text-indigo-500 w-6 h-6" />
-          </div>
+        {togglingId === mehsul._id ? (
+          <Loader2 className="animate-spin text-indigo-500 w-6 h-6" />
         ) : (
           <label
             htmlFor={`toggle-${mehsul._id}`}
@@ -150,10 +148,8 @@ const Mehsullarr = () => {
                 } w-10 h-6 rounded-full transition-colors duration-300 shadow-inner`}
               ></div>
               <div
-                className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow ${
-                  mehsul.isActive
-                    ? "transform translate-x-4"
-                    : "transform translate-x-0"
+                className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow ${
+                  mehsul.isActive ? "translate-x-4" : "translate-x-0"
                 }`}
               ></div>
             </div>
