@@ -1,5 +1,5 @@
-export const API_BASE_URL = "http://localhost:5000";
-// export const API_BASE_URL = "https://jummabackendapi.onrender.com";
+// export const API_BASE_URL = "http://localhost:5000";
+export const API_BASE_URL = "https://jummabackendapi.onrender.com";
 export const SATICIENDPOINT = "http://localhost:5000/webapi/satici";
 
 export const API_URLS = {
