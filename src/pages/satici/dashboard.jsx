@@ -566,9 +566,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 gap-4">
             {[
               { label: "Market adı", name: "marketname" },
-              { label: "Əsas ünvanı seçin", name: "unvan",placeholder:'' }
-
-
+              { label: "Əsas ünvanı seçin", name: "unvan", placeholder: "" },
             ].map((f) => (
               <div key={f.name} className="flex flex-col">
                 <label className="text-sm text-gray-600 mb-1">{f.label}</label>
@@ -623,6 +621,7 @@ const Dashboard = () => {
       {!user.isActive && (
         <div className="fixed inset-0 bg-gray-200 z-[99999] flex flex-col items-center p-6 overflow-y-auto">
           {/* CONTAINER */}
+
           <div className="text-center mb-8 rounded-2xl w-full bg-white shadow-lg py-4">
             <h1 className="text-2xl font-bold text-gray-800">
               Hesabınız Aktiv Deyil
@@ -741,7 +740,11 @@ const Dashboard = () => {
                     { label: "Ad", name: "ad", placeholder: "Ad" },
                     { label: "Soyad", name: "soyad", placeholder: "Soyad" },
                     { label: "Email", name: "email", placeholder: "Email" },
-                    { label: "Vöen", name: "vöen", placeholder: "Vöen(Məcburi deyil)" },
+                    {
+                      label: "Vöen",
+                      name: "vöen",
+                      placeholder: "Vöen(Məcburi deyil)",
+                    },
                     {
                       label: "Əlaqə nömrəsi",
                       name: "phone",
@@ -786,6 +789,12 @@ const Dashboard = () => {
                 </button>
               </div>
             )}
+            <button
+              onClick={() => dispatch(logout())}
+              className="border text-xl px-4 py-1 mt-4 cursor-pointer duration-300 rounded-full hover:bg-red-500 hover:border-red-500 hover:text-white"
+            >
+              Hesabdan çıx
+            </button>
           </div>
         </div>
       )}

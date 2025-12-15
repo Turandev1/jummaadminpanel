@@ -333,8 +333,8 @@ const Qeydiyyat = () => {
         return <Mescidqeyd />;
       case "admin":
         return <AdminSignup />;
-      case "satici":
-        return <SaticiSignup />;
+      // case "satici":
+      //   return <SaticiSignup />;
       default:
         return null;
     }
@@ -360,14 +360,14 @@ const Qeydiyyat = () => {
         >
           Admin
         </button>
-        <button
+        {/* <button
           onClick={() => setRole("satici")}
           className={`px-4 py-2 rounded cursor-pointer ${
             role === "satici" ? "bg-blue-500 text-white" : "bg-gray-200"
           }`}
         >
           Satıcı
-        </button>
+        </button> */}
       </nav>
 
       {/* Login/Signup bölümü */}

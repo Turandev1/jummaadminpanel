@@ -13,6 +13,7 @@ const Mehsullarr = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [detailmodal, setdetailmodal] = useState(false);
+  const [toggleloading, settoggleloading] = useState(false);
   // Function to fetch products
 
   const fetchProducts = useCallback(async () => {
@@ -36,6 +37,7 @@ const Mehsullarr = () => {
   }, [fetchProducts]);
 
   const handletogglestatus = async (id) => {
+    settoggleloading(true);
     try {
       const res = await api.patch(
         API_URLS.SATICI.TOGGLEPRODUCTSTATUS,
@@ -59,9 +61,12 @@ const Mehsullarr = () => {
             return mehsul;
           });
         });
+        settoggleloading(false);
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      settoggleloading(false);
     }
   };
   // --- Modal Handlers ---
@@ -96,11 +101,13 @@ const Mehsullarr = () => {
   };
 
   // --- Product Row Component ---
-  const ProductRow = ({ mehsul,index }) => (
+  const ProductRow = ({ mehsul, index }) => (
     <div className="grid grid-cols-11 gap-4 items-center p-2 border-b border-gray-100 hover:bg-indigo-50 transition-colors duration-150">
       {/* 2. Məhsul Adı (Name) - col-span-6 (Mobile: col-span-5) */}
 
-      <div className="col-span-1 text-center font-bold text-gray-700">{index}.</div>
+      <div className="col-span-1 text-center font-bold text-gray-700">
+        {index}.
+      </div>
 
       <div className="col-span-2 font-semibold text-gray-800 truncate">
         {mehsul.mehsuladi}
@@ -118,32 +125,38 @@ const Mehsullarr = () => {
 
       {/* 5. Status (Toggle) - col-span-2 */}
       <div className="col-span-2 flex justify-center">
-        <label
-          htmlFor={`toggle-${mehsul._id}`}
-          className="flex items-center cursor-pointer"
-        >
-          <div className="relative">
-            <input
-              type="checkbox"
-              id={`toggle-${mehsul._id}`}
-              checked={mehsul.isActive}
-              onChange={() => handletogglestatus(mehsul._id)}
-              className="sr-only"
-            />
-            <div
-              className={`block ${
-                mehsul.isActive ? "bg-green-500" : "bg-red-400"
-              } w-10 h-6 rounded-full transition-colors duration-300 shadow-inner`}
-            ></div>
-            <div
-              className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow ${
-                mehsul.isActive
-                  ? "transform translate-x-4"
-                  : "transform translate-x-0"
-              }`}
-            ></div>
+        {toggleloading ? (
+          <div>
+            <Loader2 className="animate-spin text-indigo-500 w-6 h-6" />
           </div>
-        </label>
+        ) : (
+          <label
+            htmlFor={`toggle-${mehsul._id}`}
+            className="flex items-center cursor-pointer"
+          >
+            <div className="relative">
+              <input
+                type="checkbox"
+                id={`toggle-${mehsul._id}`}
+                checked={mehsul.isActive}
+                onChange={() => handletogglestatus(mehsul._id)}
+                className="sr-only"
+              />
+              <div
+                className={`block ${
+                  mehsul.isActive ? "bg-green-500" : "bg-red-400"
+                } w-10 h-6 rounded-full transition-colors duration-300 shadow-inner`}
+              ></div>
+              <div
+                className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow ${
+                  mehsul.isActive
+                    ? "transform translate-x-4"
+                    : "transform translate-x-0"
+                }`}
+              ></div>
+            </div>
+          </label>
+        )}
       </div>
 
       {/* 6. Action Buttons (View/Edit) - col-span-1 */}

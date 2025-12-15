@@ -14,6 +14,7 @@ import {
   MapPinIcon,
   DollarSignIcon,
   PackageIcon,
+  Loader2,
 } from "lucide-react";
 
 // --- KÖMƏKÇİ FUNKSİYALAR (ƏVVƏLKİ KİMİ) ---
@@ -102,7 +103,7 @@ const Sifarisler = () => {
           setSelectedOrder(res.data.orders[0]);
         } else {
           setTimeout(() => {
-            setOrders([])
+            setLoading(false)
           }, 2000);
         }
       } catch (err) {
@@ -117,8 +118,9 @@ const Sifarisler = () => {
   // Yüklənmə vəziyyəti
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center gap-x-8 h-screen bg-gray-50">
         <span className="text-xl font-medium text-gray-700">Yüklənir...</span>
+        <Loader2 className="animate-spin w-8 h-8 text-green-500"  />
       </div>
     );
   }
@@ -216,7 +218,6 @@ export default Sifarisler;
 const DetailInfoBox = ({
   title,
   value,
-  Icon,
   valueClass = "text-gray-900",
 }) => (
   <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-start space-x-3">
