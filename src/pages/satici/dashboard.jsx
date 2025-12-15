@@ -7,6 +7,7 @@ import { logout, setauthdata } from "../../redux/store";
 import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import api from "../../utils/axiosclient";
+import ChangePassword from "../../components/changepassword";
 
 // PhotoPicker.jsx
 
@@ -285,12 +286,10 @@ const Dashboard = () => {
       !formData.phone ||
       !formData.dogumtarixi ||
       // !formData.vöen ||
-      !formData.marketname 
+      !formData.marketname
     ) {
       return toast.error("Zəhmət olmasa bütün sahələri doldurun.");
     }
-
-
 
     try {
       setLoading(true);
@@ -604,6 +603,8 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      <ChangePassword />
 
       {previewModal.open && (
         <div

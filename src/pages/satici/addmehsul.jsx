@@ -47,6 +47,7 @@ const subcategoriesMap = {
     "Hədiyyəlik",
     "İslami əşyalar Digər",
   ],
+  saglamliq: ["Dərman", "Qida əlavəsi"],
   ushaqmehsullari: [
     "Oyuncaqlar",
     "Uşaq qidaları",
@@ -297,6 +298,7 @@ const AddMehsul = () => {
               <option value="qida">Qida</option>
               <option value="shexsibaxim">Şəxsi baxım</option>
               <option value="temizlikmehsullari">Təmizlik məhsulları</option>
+              <option value="saglamliq">Sağlamlıq məhsulları</option>
               <option value="islamieshyavekitablar">
                 İslami əşya və kitablar
               </option>
