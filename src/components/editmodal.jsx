@@ -41,6 +41,7 @@ const subcategoriesMap = {
     "Hədiyyəlik",
     "Digər",
   ],
+  saglamliq: ["Dərman", "Qida əlavəsi"],
   ushaqmehsullari: [
     "Oyuncaqlar",
     "Uşaq qidası",
@@ -50,12 +51,8 @@ const subcategoriesMap = {
   ],
 };
 
-
-
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
 const UPLOAD_PRESET = "product_photos";
-
-
 
 const EditModal = ({ product, onClose }) => {
   const [modalImage, setModalImage] = useState(null);
@@ -347,6 +344,7 @@ const EditModal = ({ product, onClose }) => {
                 <option value="qida">Qida</option>
                 <option value="shexsibaxim">Şəxsi baxım</option>
                 <option value="temizlikmehsullari">Təmizlik məhsulları</option>
+                <option value="saglamliq">Sağlamlıq məhsulları</option>
                 <option value="islamieshyavekitablar">
                   İslami əşya və kitablar
                 </option>
