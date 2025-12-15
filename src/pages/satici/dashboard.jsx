@@ -167,11 +167,11 @@ const UPLOAD_PRESET = "satici_profile_photos";
 const Dashboard = () => {
   const { user, accessToken } = useAuth();
   const [editable, setEditable] = useState(false);
-  const [step, setStep] = useState(
-    localStorage.getItem("verificationSent") ? "code" : "email"
-  );
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  // const [step, setStep] = useState(
+  //   localStorage.getItem("verificationSent") ? "code" : "email"
+  // );
+  // const [email, setEmail] = useState("");
+  // const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const [showpicker, setshowpicker] = useState(false);
@@ -191,92 +191,92 @@ const Dashboard = () => {
     vöen: user?.vöen || "",
   });
 
-  const sendEmailCode = async () => {
-    if (!email.includes("@")) {
-      return toast.error("Düzgün email yazın.");
-    }
+  // const sendEmailCode = async () => {
+  //   if (!email.includes("@")) {
+  //     return toast.error("Düzgün email yazın.");
+  //   }
 
-    try {
-      setLoading(true);
+  //   try {
+  //     setLoading(true);
 
-      const res = await api.post(API_URLS.SATICI.SENDVERIFYCODE, {
-        email,
-      });
+  //     const res = await api.post(API_URLS.SATICI.SENDVERIFYCODE, {
+  //       email,
+  //     });
 
-      const data = res.data;
-      if (data.success) {
-        localStorage.setItem("verificationSent", "true");
-        toast.success("Kod email ünvanınıza göndərildi.", { autoClose: 2000 });
-        setStep("code");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data, "Xəta baş verdi.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     const data = res.data;
+  //     if (data.success) {
+  //       localStorage.setItem("verificationSent", "true");
+  //       toast.success("Kod email ünvanınıza göndərildi.", { autoClose: 2000 });
+  //       setStep("code");
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error(err.response?.data, "Xəta baş verdi.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  const resendEmailCode = async () => {
-    try {
-      setLoading(true);
+  // const resendEmailCode = async () => {
+  //   try {
+  //     setLoading(true);
 
-      const res = await api.post(API_URLS.SATICI.SENDVERIFYCODE, {
-        email: user?.email,
-      });
+  //     const res = await api.post(API_URLS.SATICI.SENDVERIFYCODE, {
+  //       email: user?.email,
+  //     });
 
-      const data = res.data;
-      if (data.success) {
-        localStorage.setItem("verificationSent", "true");
-        toast.success("Kod email ünvanınıza göndərildi.", { autoClose: 2000 });
-        setStep("code");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data, "Xəta baş verdi.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     const data = res.data;
+  //     if (data.success) {
+  //       localStorage.setItem("verificationSent", "true");
+  //       toast.success("Kod email ünvanınıza göndərildi.", { autoClose: 2000 });
+  //       setStep("code");
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error(err.response?.data, "Xəta baş verdi.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  const verifyEmailCode = async () => {
-    const fullCode = code.join("");
+  // const verifyEmailCode = async () => {
+  //   const fullCode = code.join("");
 
-    if (fullCode.length !== 6) {
-      return toast.error("Kodu tam daxil edin.");
-    }
+  //   if (fullCode.length !== 6) {
+  //     return toast.error("Kodu tam daxil edin.");
+  //   }
 
-    try {
-      setLoading(true);
+  //   try {
+  //     setLoading(true);
 
-      const userId = user.id || user._id;
+  //     const userId = user.id || user._id;
 
-      const res = await api.post(API_URLS.SATICI.VERIFYEMAILCODE, {
-        id: userId,
-        code: fullCode,
-      });
+  //     const res = await api.post(API_URLS.SATICI.VERIFYEMAILCODE, {
+  //       id: userId,
+  //       code: fullCode,
+  //     });
 
-      const data = res.data;
+  //     const data = res.data;
 
-      if (data.success) {
-        toast.success("Email təsdiqləndi!");
+  //     if (data.success) {
+  //       toast.success("Email təsdiqləndi!");
 
-        // Redux ilə user məlumatını yenilə
-        dispatch(
-          setauthdata({
-            user: data.user,
-          })
-        );
+  //       // Redux ilə user məlumatını yenilə
+  //       dispatch(
+  //         setauthdata({
+  //           user: data.user,
+  //         })
+  //       );
 
-        localStorage.removeItem("verificationSent");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Xəta baş verdi.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //       localStorage.removeItem("verificationSent");
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Xəta baş verdi.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handlecompeletation = async () => {
     if (
