@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
-const UPLOAD_PRESET = "testpreset";
+const UPLOAD_PRESET = "product_photos";
 
 const subcategoriesMap = {
   qida: [

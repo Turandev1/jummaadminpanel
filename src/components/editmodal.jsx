@@ -53,7 +53,7 @@ const subcategoriesMap = {
 
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
-const UPLOAD_PRESET = "testpreset";
+const UPLOAD_PRESET = "product_photos";
 
 
 
