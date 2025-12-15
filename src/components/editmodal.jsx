@@ -4,52 +4,9 @@ import { API_URLS } from "../utils/api";
 import { X } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { subcategoriesMap } from "../utils/subcategories";
 
-const subcategoriesMap = {
-  qida: [
-    "Süd və süd məhsulları",
-    "Ət və ət məhsulları",
-    "Dəniz məhsulları",
-    "Un məmulatları",
-    "Şirniyyat",
-    "Quru qidalar",
-    "İçkilər",
-    "Hazır yeməklər,yarımfabrikatlar",
-    "Digər",
-  ],
-  shexsibaxim: [
-    "Dəri baxımı",
-    "Qadın baxım məhsulları",
-    "Dezodorant və Ətirlər",
-    "Saç baxımı",
-    "Gigiyena",
-    "Üz və bədən baxımı",
-    "Hamam məhsulları",
-    "Digər",
-  ],
-  temizlikmehsullari: [
-    "Yuyucu vasitələr",
-    "Təmizlik bezləri",
-    "Otaq ətirləri",
-    "Digər",
-  ],
-  islamieshyavekitablar: [
-    "Dini kitablar",
-    "Səccadələr",
-    "Təsbehlər",
-    "Geyimlər",
-    "Hədiyyəlik",
-    "Digər",
-  ],
-  saglamliq: ["Dərman", "Qida əlavəsi"],
-  ushaqmehsullari: [
-    "Oyuncaqlar",
-    "Uşaq qidası",
-    "Təmizlik vasitələri",
-    "Uşaq geyimi",
-    "Digər",
-  ],
-};
+
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
 const UPLOAD_PRESET = "product_photos";

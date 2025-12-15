@@ -6,55 +6,12 @@ import { API_URLS } from "../../utils/api";
 import useAuth from "../../redux/authredux";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { subcategoriesMap } from "../../utils/subcategories";
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
 const UPLOAD_PRESET = "product_photos";
 
-const subcategoriesMap = {
-  qida: [
-    "Süd və süd məhsulları",
-    "Ət və ət məhsulları",
-    "Dəniz məhsulları",
-    "Şirniyyat",
-    "Un məmulatları",
-    "Quru qidalar",
-    "İçkilər",
-    "Hazır yeməklər, Yarımfabrikatlar",
-    "Qida Digər",
-  ],
-  shexsibaxim: [
-    "Dəri baxımı",
-    "Ağız və diş baxımı məhsulları",
-    "Qadın baxım məhsulları",
-    "Dezodorant və Ətirlər",
-    "Saç baxımı",
-    "Gigiyena",
-    "Üz və bədən baxımı",
-    "Hamam məhsulları",
-    "Baxım Digər",
-  ],
-  temizlikmehsullari: [
-    "Yuyucu vasitələr",
-    "Təmizlik bezləri",
-    "Otaq ətirləri",
-    "Təmizlik Digər",
-  ],
-  islamieshyavekitablar: [
-    "Dini kitablar",
-    "Səccadələr",
-    "Təsbehlər",
-    "Geyimlər",
-    "Hədiyyəlik",
-    "İslami əşyalar Digər",
-  ],
-  saglamliq: ["Dərman", "Qida əlavəsi"],
-  ushaqmehsullari: [
-    "Oyuncaqlar",
-    "Uşaq qidaları",
-    "Təmizlik vasitələri",
-    "Uşaq Digər",
-  ],
-};
+
 
 const AddMehsul = () => {
   const [formData, setFormData] = useState({
