@@ -88,6 +88,8 @@ const Mehsullarr = () => {
         return "Şəxsi baxım";
       case "temizlikmehsullari":
         return "Təmizlik məhsulları";
+      case "saglamliq":
+        return "Sağlamlıq";
       case "islamieshyavekitablar":
         return "Islami əşya və kitablar";
       case "ushaqmehsullari":
