@@ -74,5 +74,6 @@ export const API_URLS = {
     RESET_PASSWORD: `${API_BASE_URL}/webapi/satici/resetpassword`,
     GET_ORDERS: `${API_BASE_URL}/webapi/satici/getorders`,
     CHANGEPASSWORD: `${API_BASE_URL}/webapi/satici/changepassword`,
+    CHANGEORDERSTATUS: `${API_BASE_URL}/webapi/satici/changeorderstatus`,
   },
 };

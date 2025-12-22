@@ -146,10 +146,9 @@ const Sifarisler = () => {
       setLoading(true);
       try {
         // Backend API-nizə uyğun olaraq yolu tənzimləyin
-        const response = await fetch(`/api/orders/${order._id}/status`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
+        const response = await api.patch(API_URLS.SATICI.CHANGEORDERSTATUS, {
+          orderId: order._id,
+          status: newStatus,
         });
 
         if (response.ok) {
