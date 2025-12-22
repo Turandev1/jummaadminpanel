@@ -6,8 +6,6 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { subcategoriesMap } from "../utils/subcategories";
 
-
-
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
 const UPLOAD_PRESET = "product_photos";
 
@@ -37,6 +35,7 @@ const EditModal = ({ product, onClose }) => {
     kateqoriya: product.kateqoriya || "",
     altkateqoriya: product.altkateqoriya || "",
     qiymet: product.qiymet || 0,
+    endirimliqiymet: product.endirimliqiymet || 0,
     depo: product.depo || 0,
     brand: product.brand || "",
     miqdari: product.miqdari || "",
@@ -276,7 +275,7 @@ const EditModal = ({ product, onClose }) => {
                 value={formData.aciqlama}
                 onChange={handleChange}
                 placeholder="Məhsul haqqında açıqlama (vergüllə ayırın)"
-                className="mt-1 block w-full rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
+                className="mt-1 block w-full h-60 rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
                 rows={3}
                 required
               />
@@ -339,6 +338,20 @@ const EditModal = ({ product, onClose }) => {
                 type="number"
                 name="qiymet"
                 value={formData.qiymet}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
+                required
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">
+                Endirimli qiymət (AZN)
+              </span>
+              <input
+                type="number"
+                name="endirimliqiymet"
+                value={formData.endirimliqiymet}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
                 required

@@ -62,7 +62,7 @@ const Resetpass = () => {
   const handleVerifyCode = async (e) => {
     e.preventDefault();
     if (form.code.length !== 6)
-      return toast.error("Doğrulama kodu 6 haneli olmalıdır.");
+      return toast.error("Doğrulama kodu 6 xanalı olmalıdır.");
 
     try {
       setLoading(true);
@@ -73,12 +73,12 @@ const Resetpass = () => {
       });
 
       if (res.data?.success) {
-        toast.success("Kod doğrulandı. Yeni şifrenizi belirleyebilirsiniz.");
+        toast.success("Kod doğrulandı. Yeni şifrə təyin edin.");
         setStep("new_password");
       }
     } catch (error) {
       console.error(error);
-      toast.error(error?.response?.data?.hata || "Kod doğrulama başarısız!");
+      toast.error(error?.response?.data?.hata || "Kod doğrulama uğursuzdur!");
     } finally {
       setLoading(false);
     }
@@ -88,9 +88,9 @@ const Resetpass = () => {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (form.password.length < 6)
-      return toast.error("Şifre en az 6 simvol olmalıdır.");
+      return toast.error("Şifre ən az 6 simvol olmalıdır.");
     if (form.password !== form.confirmPassword)
-      return toast.error("Şifreler eşleşmiyor.");
+      return toast.error("Şifrələr uyğun gəlmir.");
 
     try {
       setLoading(true);
@@ -103,13 +103,13 @@ const Resetpass = () => {
 
       if (res.data?.success) {
         toast.success(
-          "Şifreniz başarıyla sıfırlandı. Yeni şifrenizle giriş yapabilirsiniz."
+          "Şifreniz uğurla sıfırlandı. Yeni şifrənizlə giriş edin."
         );
         setStep("success");
       }
     } catch (error) {
       console.error(error);
-      toast.error(error?.response?.data?.hata || "Şifre sıfırlama başarısız!");
+      toast.error(error?.response?.data?.hata || "Şifre sıfırlama uğursuzdur!");
     } finally {
       setLoading(false);
     }

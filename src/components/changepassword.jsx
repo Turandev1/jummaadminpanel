@@ -10,7 +10,9 @@ const ChangePassword = ({ defaultEmail }) => {
     newpassword: "",
     confirmpassword: "",
   });
-
+  const [showoldpass, setshowoldpass] = useState(false);
+  const [shownewpass, setshownewpass] = useState(false);
+  const [showconfirmpass, setshowconfirmpass] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -36,7 +38,7 @@ const ChangePassword = ({ defaultEmail }) => {
     try {
       setLoading(true);
 
-      const res = await api.post(API_URLS.SATICI.CHANGE_PASSWORD, {
+      const res = await api.patch(API_URLS.SATICI.CHANGEPASSWORD, {
         email,
         password,
         newpassword,
@@ -64,64 +66,89 @@ const ChangePassword = ({ defaultEmail }) => {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-6 mt-8">
+    <div className="bg-white shadow-lg rounded-xl p-6 mt-8 mb-20">
       <h2 className="text-lg font-semibold mb-4">Şifrəni dəyiş</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* EMAIL */}
-        <div className="flex flex-col md:col-span-2">
+        <div className="flex flex-col md:col-span-1">
           <label className="text-sm text-gray-600 mb-1">Email</label>
           <input
             type="email"
             name="email"
+            autoComplete="off"
             value={form.email}
             onChange={handleChange}
-            className="border rounded-md px-3 py-2"
+            className="border rounded-md px-3 py-2 outline-none focus:bg-green-100 focus:ring-2 focus:ring-green-400 duration-300 transition-all"
             placeholder="Email"
           />
         </div>
 
         {/* OLD PASSWORD */}
-        <div className="flex flex-col">
+        <div className="flex relative flex-col">
           <label className="text-sm text-gray-600 mb-1">Köhnə şifrə</label>
           <input
-            type="password"
+            type={showoldpass ? "text" : "password"}
             name="password"
             value={form.password}
+            autoComplete="off"
             onChange={handleChange}
-            className="border rounded-md px-3 py-2"
+            className="border rounded-md px-3 py-2 outline-none focus:bg-green-100 focus:ring-2 focus:ring-green-400 duration-300 transition-all"
             placeholder="Köhnə şifrə"
           />
+          <button
+            type="button"
+            onClick={() => setshowoldpass(!showoldpass)}
+            className="absolute right-3 bottom-3 cursor-pointer hover:scale-115 duration-300 transition-all ease-in-out"
+          >
+            {showoldpass ? "Gizlət" : "Göstər"}
+          </button>
         </div>
 
         {/* NEW PASSWORD */}
-        <div className="flex flex-col">
+        <div className="flex relative flex-col">
           <label className="text-sm text-gray-600 mb-1">Yeni şifrə</label>
           <input
-            type="password"
+            type={shownewpass ? "text" : "password"}
             name="newpassword"
+            autoComplete="new-password"
             value={form.newpassword}
             onChange={handleChange}
-            className="border rounded-md px-3 py-2"
+            className="border rounded-md px-3 py-2 outline-none focus:bg-green-100 focus:ring-2 focus:ring-green-400 duration-300 transition-all"
             placeholder="Yeni şifrə"
           />
+          <button
+            type="button"
+            onClick={() => setshownewpass(!shownewpass)}
+            className="absolute right-3 bottom-3 cursor-pointer hover:scale-115 duration-300 transition-all ease-in-out"
+          >
+            {shownewpass ? "Gizlət" : "Göstər"}
+          </button>
         </div>
 
         {/* CONFIRM PASSWORD */}
-        <div className="flex flex-col md:col-span-2">
+        <div className="flex relative flex-col md:col-span-1">
           <label className="text-sm text-gray-600 mb-1">
             Yeni şifrə (təkrar)
           </label>
           <input
-            type="password"
+            type={showconfirmpass ? "text" : "password"}
             name="confirmpassword"
+            autoComplete="new-password"
             value={form.confirmpassword}
             onChange={handleChange}
-            className="border rounded-md px-3 py-2"
+            className="border rounded-md px-3 py-2 outline-none focus:bg-green-100 focus:ring-2 focus:ring-green-400 duration-300 transition-all"
             placeholder="Yeni şifrəni təkrar edin"
           />
+          <button
+            type="button"
+            onClick={() => setshowconfirmpass(!showconfirmpass)}
+            className="absolute right-3 bottom-3 cursor-pointer hover:scale-115 duration-300 transition-all ease-in-out"
+          >
+            {showconfirmpass ? "Gizlət" : "Göstər"}
+          </button>
         </div>
-      </div>
+      </form>
 
       <button
         onClick={handleSubmit}

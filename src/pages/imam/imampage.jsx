@@ -38,17 +38,17 @@ const Imampage = () => {
       );
 
       if (res.success) {
-        toast.success(res.message || "Bilgiler başarıyla güncellendi ✅");
+        toast.success(res.message || "Bilgilər başarıyla güncellendi ✅");
         setEditable(false);
       } else {
         // Backend mesajı varsa onu göster, yoksa default
-        toast.error(res.message || "Güncelleme başarısız ❌");
+        toast.error(res.message || "Yeniləmə uğursuzdur ❌");
       }
     } catch (error) {
       console.error("Kaydetme hatası:", error);
       // Backend hata mesajı varsa onu göster, yoksa default
       const backendMsg = error.response?.data?.message || error.message;
-      toast.error(backendMsg || "Bir hata oluştu!");
+      toast.error(backendMsg || "Bir xəta baş verdi!");
     } finally {
       setisloading(false);
     }

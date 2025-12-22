@@ -29,6 +29,8 @@ import Mehsullarr from "../pages/satici/mehsullarr";
 import DailyCounter from "../pages/admin/dailycounter";
 import Usermessages from "../pages/admin/usermessages";
 import Resetpass from "../pages/home/resetpass";
+import Saticilar from "../pages/admin/saticilar";
+import Sifarisleradmin from "../pages/admin/sifarisler";
 
 const DashboardLayout = () => {
   return (
@@ -75,6 +77,8 @@ export const AdminRoutes = () => (
       <Route path="ianeqoy" element={<Ianeyerlestir />} />
       <Route path="istifadecimesajlari" element={<Usermessages />} />
       <Route path="dailycounter" element={<DailyCounter />} />
+      <Route path="sellers" element={<Saticilar />} />
+      <Route path="orders" element={<Sifarisleradmin />} />
       {/* admin alt sayfalar */}
     </Route>
   </Routes>

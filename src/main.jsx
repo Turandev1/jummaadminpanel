@@ -6,11 +6,12 @@ import { Provider } from "react-redux"; // Redux Provider
 
 import { BrowserRouter } from "react-router-dom";
 import store from "./redux/store.js";
+import { ChakraProvider } from "@chakra-ui/react";
 
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    <StrictMode>
-      <App />
-    </StrictMode>
+      <StrictMode>
+        <App />
+      </StrictMode>
   </Provider>
 );

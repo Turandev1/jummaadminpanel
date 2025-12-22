@@ -6,10 +6,9 @@
 
 //
 
-// export const API_BASE_URL = "http://localhost:5000";
+export const API_BASE_URL = "http://localhost:5000";
 
-export const API_BASE_URL = "https://jummabackendapi.onrender.com";
-
+// export const API_BASE_URL = "https://jummabackendapi.onrender.com";
 
 export const API_URLS = {
   IMAM: {
@@ -27,6 +26,8 @@ export const API_URLS = {
     GETUSERS: `${API_BASE_URL}/webapi/admin/getusers`,
     GETADMINS: `${API_BASE_URL}/webapi/admin/getadmins`,
     GETMESCIDS: `${API_BASE_URL}/webapi/admin/getmescids`,
+    GETSATICILAR: `${API_BASE_URL}/webapi/admin/getsaticilar`,
+    GETORDERS: `${API_BASE_URL}/webapi/admin/getadminsifarisler`,
     GETME: `${API_BASE_URL}/webapi/admin/getme`,
     REFRESHTOKEN: `${API_BASE_URL}/webapi/admin/refreshToken`,
     EDITADMIN: `${API_BASE_URL}/webapi/admin/edit-admin`,
@@ -46,6 +47,12 @@ export const API_URLS = {
     GETUSERMESSAGES: `${API_BASE_URL}/webapi/admin/getusermessages`,
     MARK_AS_READ: `${API_BASE_URL}/webapi/admin/toggleisread`,
     SENDRESPONSE: `${API_BASE_URL}/webapi/admin/sendresponse`,
+    BLOCKSATICI: `${API_BASE_URL}/webapi/admin/blocksatici`,
+    BLOCKDANCIXART: `${API_BASE_URL}/webapi/admin/blokdancixart`,
+    WARNSATICI: `${API_BASE_URL}/webapi/admin/warnsatici`,
+    GETSATİCİPRODUCTS: `${API_BASE_URL}/webapi/admin/getsaticiproducts`,
+    TOGGLEPRODUCTSTATUS: `${API_BASE_URL}/webapi/admin/toggleproductstatus`,
+    TOGGLEBLOCKPRODUCT: `${API_BASE_URL}/webapi/admin/toggleblockproduct`,
   },
   SATICI: {
     LOGIN: `${API_BASE_URL}/webapi/satici/login`,
@@ -66,5 +73,6 @@ export const API_URLS = {
     VERIFY_CODE: `${API_BASE_URL}/webapi/satici/verifyresetcode`,
     RESET_PASSWORD: `${API_BASE_URL}/webapi/satici/resetpassword`,
     GET_ORDERS: `${API_BASE_URL}/webapi/satici/getorders`,
+    CHANGEPASSWORD: `${API_BASE_URL}/webapi/satici/changepassword`,
   },
 };

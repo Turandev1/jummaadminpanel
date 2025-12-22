@@ -372,7 +372,7 @@ const Dashboard = () => {
 
     const uploadRes = await axios.post(CLOUDINARY_URL, fd);
     const uploadData = uploadRes.data;
-    if (!uploadData.secure_url) throw new Error("Cloudinary'den url alınamadı");
+    if (!uploadData.secure_url) throw new Error("Cloudinary'dən url alına bilmədi");
 
     const userID = user.id || user._id;
 
@@ -388,7 +388,7 @@ const Dashboard = () => {
     );
 
     const backendData = backendRes.data;
-    if (!backendData.success) throw new Error("Sunucu güncellemesi başarısız");
+    if (!backendData.success) throw new Error("Server yeniləməsi uğursuzdur");
     toast.success(backendData.mesaj);
     console.log("user:", backendData.user);
     dispatch(

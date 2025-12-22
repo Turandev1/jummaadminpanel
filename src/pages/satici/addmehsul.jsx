@@ -11,15 +11,14 @@ import { subcategoriesMap } from "../../utils/subcategories";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
 const UPLOAD_PRESET = "product_photos";
 
-
-
 const AddMehsul = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     category: "",
     subcategory: "",
-    price: "",
+    qiymet: "",
+    endirimliqiymet: "",
     stock: "",
     brand: "",
     miqdar: "",
@@ -155,7 +154,8 @@ const AddMehsul = () => {
         kateqoriya: formData.category,
         altkateqoriya: formData.subcategory,
         depo: formData.stock,
-        qiymet: formData.price,
+        qiymet: formData.qiymet,
+        endirimliqiymet: formData.endirimliqiymet,
         brand:
           formData.brand.charAt(0).toUpperCase() +
           formData.brand.slice(1).toLowerCase(),
@@ -173,7 +173,8 @@ const AddMehsul = () => {
           description: "",
           category: "",
           subcategory: "",
-          price: "",
+          qiymet: "",
+          endirimliqiymet: "",
           stock: "",
           brand: "",
           miqdar: "",
@@ -334,8 +335,20 @@ const AddMehsul = () => {
             <label className="block text-gray-700 mb-1">Qiymət (AZN)</label>
             <input
               type="number"
-              name="price"
-              value={formData.price}
+              name="qiymet"
+              value={formData.qiymet}
+              onChange={handleChange}
+              placeholder="Qiyməti yazın"
+              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-1">Endirimli qiymət (AZN)</label>
+            <input
+              type="number"
+              name="endirimliqiymet"
+              value={formData.endirimliqiymet}
               onChange={handleChange}
               placeholder="Qiyməti yazın"
               className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
@@ -368,20 +381,20 @@ const AddMehsul = () => {
               <option value="USD">USD</option>
             </select>
           </div> */}
+          <div className="grid grid-cols-1">
+            <label className="block text-gray-700 mb-1">Brand (Varsa)</label>
+            <input
+              type="text"
+              name="brand"
+              value={formData.brand}
+              onChange={handleChange}
+              placeholder="Məhsulun brandini qeyd edin və ya boş qoyun"
+              className="w-full capitalize border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+            />
+          </div>
         </div>
 
         {/* brand */}
-        <div>
-          <label className="block text-gray-700 mb-1">Brand (Varsa)</label>
-          <input
-            type="text"
-            name="brand"
-            value={formData.brand}
-            onChange={handleChange}
-            placeholder="Məhsulun brandini qeyd edin və ya boş qoyun"
-            className="w-full capitalize border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
-          />
-        </div>
 
         {/* Resim yükleme */}
         <div className="flex flex-col gap-3">

@@ -17,9 +17,9 @@ const Sidebar = () => {
       { to: "/admin/mescids", label: "Mescidler" },
       { to: "/admin/ianeqoy", label: "Iane qoy" },
       { to: "/admin/istifadecimesajlari", label: "Istifadəçi mesajlari" },
+      { to: "/admin/sellers", label: "Satıcılar" },
+      { to: "/admin/orders", label: "Sifarişlər" },
       { to: "/admin/dailycounter", label: "Sayaç" },
-      // { to: "/admin/users", label: "İstifadəçilər" },
-      // { to: "/admin/admins", label: "Adminlər" },
     ],
     imam: [
       { to: "/imam", label: "İmam paneli" },
