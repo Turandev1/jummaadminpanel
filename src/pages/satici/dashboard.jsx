@@ -8,6 +8,7 @@ import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import api from "../../utils/axiosclient";
 import ChangePassword from "../../components/changepassword";
+import { AddressManager } from "../../components/addressmanager";
 
 // PhotoPicker.jsx
 
@@ -176,6 +177,7 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const [showpicker, setshowpicker] = useState(false);
   const [iseditable, setiseditable] = useState(false);
+  const [showaddresses, setshowaddresses] = useState(false);
   const [previewModal, setPreviewModal] = useState({
     open: false,
     image: "",
@@ -188,6 +190,8 @@ const Dashboard = () => {
     phone: user?.phone || "",
     dogumtarixi: user?.dogumtarixi || "",
     marketname: user?.market?.ad || "",
+    haqqinda: user?.market?.haqqinda || "",
+    aciqlama: user?.market?.aciqlama || "",
     vöen: user?.vöen || "",
   });
 
@@ -342,6 +346,8 @@ const Dashboard = () => {
           phone: formData.phone,
           dogumtarixi: formData.dogumtarixi,
           marketname: formData.marketname,
+          aciqlama: formData.aciqlama,
+          haqqinda: formData.haqqinda,
         },
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -372,7 +378,8 @@ const Dashboard = () => {
 
     const uploadRes = await axios.post(CLOUDINARY_URL, fd);
     const uploadData = uploadRes.data;
-    if (!uploadData.secure_url) throw new Error("Cloudinary'dən url alına bilmədi");
+    if (!uploadData.secure_url)
+      throw new Error("Cloudinary'dən url alına bilmədi");
 
     const userID = user.id || user._id;
 
@@ -397,6 +404,93 @@ const Dashboard = () => {
       })
     );
     return { success: true, user: backendData.user };
+  };
+
+  const handleAddNewAddress = async (newAddressData) => {
+    // newAddressData: { ad, type, address: {fullAddress, city...}, location: {coordinates: [lng, lat]} }
+    try {
+      setLoading(true);
+      const userId = user.id || user._id;
+
+      const res = await api.patch(
+        API_URLS.SATICI.ADDNEWADDRESS,
+        {
+          id: userId,
+          address: newAddressData,
+        },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (res.data.success) {
+        dispatch(setauthdata({ user: res.data.user })); // Redux yenilənir
+        toast.success("Yeni ünvan uğurla əlavə edildi");
+        return true; // Modalı bağlamaq üçün
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.mesaj || "Ünvan əlavə edilərkən xəta baş verdi"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditAddress = async (addressId, updatedData) => {
+    try {
+      setLoading(true);
+      const userId = user.id || user._id;
+
+      const res = await api.patch(
+        API_URLS.SATICI.CHANGEEXISTINGADDRESS,
+        {
+          id: userId,
+          addressId: addressId, // Hansı ünvanın dəyişəcəyi
+          updatedData: updatedData,
+        },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (res.data.success) {
+        dispatch(setauthdata({ user: res.data.user }));
+        toast.success("Ünvan məlumatları yeniləndi");
+        return true;
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Dəyişikliklər yadda saxlanılmadı");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handleDeleteAddress = async (addressId) => {
+    if (!window.confirm("Bu ünvanı silmək istədiyinizə əminsiniz?")) return;
+
+    try {
+      setLoading(true);
+      const userId = user.id || user._id;
+
+      const res = await api.patch(
+        API_URLS.SATICI.DELETEANADDRESS,
+        {
+          id: userId,
+          addressId: addressId,
+        },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (res.data.success) {
+        dispatch(setauthdata({ user: res.data.user }));
+        toast.success("Ünvan silindi");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Ünvan silinərkən xəta baş verdi");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -543,42 +637,74 @@ const Dashboard = () => {
 
       {/* Market melumatlari */}
 
+      {/* Market məlumatları */}
       <div className="bg-white shadow-lg rounded-xl p-6 mt-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Market məlumatları</h2>
-
           {!iseditable ? (
-            <button
-              className="bg-indigo-500 cursor-pointer text-white px-4 py-1 rounded-md"
-              onClick={() => {
-                setiseditable(true);
-                setEditable(false);
-              }}
-            >
-              Redaktə et
-            </button>
+            <div className="">
+              <button
+                onClick={() => setshowaddresses(true)}
+                className="px-4 py-1  mx-6 bg-sky-600 text-white rounded-lg cursor-pointer hover:bg-blue-800 duration-300 transition-all"
+              >
+                Ünvanlar
+              </button>
+              <button
+                className="bg-indigo-500 cursor-pointer text-white px-4 py-1 rounded-md"
+                onClick={() => {
+                  setiseditable(true);
+                  setEditable(false);
+                }}
+              >
+                Redaktə et
+              </button>
+            </div>
           ) : null}
         </div>
 
-        {/* EDIT MODE */}
         {iseditable ? (
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: "Market adı", name: "marketname" },
-              { label: "Əsas ünvanı seçin", name: "unvan", placeholder: "" },
-            ].map((f) => (
-              <div key={f.name} className="flex flex-col">
-                <label className="text-sm text-gray-600 mb-1">{f.label}</label>
-                <input
-                  type={f.type || "text"}
-                  name={f.name}
-                  value={formData[f.name]}
-                  onChange={handleInput}
-                  className="border rounded-md px-3 py-2"
-                  pattern={f.pattern || ""}
-                />
-              </div>
-            ))}
+          /* EDIT MODE */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col col-span-2">
+              <label className="text-sm text-gray-600 mb-1">Market adı</label>
+              <input
+                type="text"
+                name="marketname"
+                value={formData.marketname}
+                onChange={handleInput}
+                className="border rounded-md px-3 py-2"
+              />
+            </div>
+
+            <div className="flex flex-col col-span-2 lg:col-span-1">
+              <label className="text-sm h-10 text-gray-600 mb-1">
+                Marketin açıqlaması,Market açıqlaması satıcı olaraq fəalliyyətin
+                davamı üçün mütləqdir
+              </label>
+              <textarea
+                rows={4}
+                type="text"
+                name="marketDescription"
+                placeholder="Bizə özünüzdən və satıcı fəaliyyətinizdən danışın,Bu hissə istifadəçilərə göstərilmir"
+                value={formData.marketDescription}
+                onChange={handleInput}
+                className="border rounded-md px-3 py-2"
+              />
+            </div>
+
+            <div className="flex flex-col col-span-2 lg:col-span-1">
+              <label className="text-sm h-10 text-gray-600 mb-1">
+                Market haqqında.Bu hissə marketdə istifadəçilərə göstəriləcək
+              </label>
+              <textarea
+                name="marketAbout"
+                rows="4"
+                placeholder="İstifadəçilərə özünüz və satdığınız mallar haqqında məlumat verin."
+                value={formData.marketAbout}
+                onChange={handleInput}
+                className="border rounded-md px-3 py-2 resize-none"
+              />
+            </div>
 
             <div className="col-span-2 flex justify-end gap-3 mt-4">
               <button
@@ -587,7 +713,6 @@ const Dashboard = () => {
               >
                 Ləğv et
               </button>
-
               <button
                 onClick={handleSave}
                 className="bg-green-600 cursor-pointer text-white px-4 py-2 rounded-md"
@@ -597,9 +722,23 @@ const Dashboard = () => {
             </div>
           </div>
         ) : (
-          /* READ MODE (Görüntüleme modu) */
-          <div className="grid grid-cols-2 text-sm gap-y-5">
+          /* READ MODE (Görüntüləmə) */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6">
             <ProfileField label="Market adı" value={user.market?.ad} />
+            <div className="md:col-span-2 border-b border-gray-300 pb-2">
+              <span className="text-gray-500 text-lg block">
+                Market açıqlaması
+              </span>
+              <span className="font-medium text-xl italic text-gray-700">
+                {user.market?.aciqlama || "Açıqlama daxil edilməyib"}
+              </span>
+            </div>
+            <div className="md:col-span-2 border-b border-gray-300 pb-2">
+              <span className="text-gray-500 text-lg block">Haqqında</span>
+              <p className="font-medium text-lg italic text-gray-800 whitespace-pre-wrap">
+                {user.market?.haqqinda || "Məlumat daxil edilməyib"}
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -798,6 +937,17 @@ const Dashboard = () => {
             </button>
           </div>
         </div>
+      )}
+      {/* address sahesi */}
+      {/* Address Modal Trigger */}
+      {showaddresses && (
+        <AddressManager
+          addresses={user.market.address}
+          onClose={() => setshowaddresses(false)}
+          onDelete={handleDeleteAddress}
+          onUpdate={handleEditAddress}
+          onAdd={handleAddNewAddress}
+        />
       )}
     </div>
   );

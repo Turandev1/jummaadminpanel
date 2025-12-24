@@ -20,8 +20,8 @@ const Detailmodal = ({ mehsul, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl p-6 transform transition-all duration-300 scale-100">
+    <div className="fixed inset-0 bg-black/60 bg-opacity-75 flex items-center justify-center px-4 py-8 z-50 transition-opacity duration-300 backdrop-blur-sm">
+      <div className="bg-white rounded-xl overflow-y-auto shadow-2xl w-full max-w-[90%] h-full p-6 transform transition-all duration-300 scale-100">
         <div className="flex justify-between items-center border-b pb-1 mb-3">
           <h2 className="text-2xl font-bold text-gray-800">Məhsul Detalları</h2>
           <button onClick={onClose}>
@@ -72,6 +72,20 @@ const Detailmodal = ({ mehsul, onClose }) => {
           <span className="text-lg font-medium text-gray-700">
             Ölçü vahidi: {mehsul.olcuvahidi}
           </span>
+          <span className="text-lg font-medium text-gray-700">
+            Ölçü vahidi: {mehsul.aciqlama}
+          </span>{" "}
+          <span className="text-lg font-medium text-gray-700">
+            Ölçü vahidi: {mehsul.terkibi}
+          </span>
+        </div>
+        <div className="grid grid-cols-2">
+          {mehsul.filiallar.map((filial) => (
+            <div className="h-40 w-[80%]" key={filial.id}>
+              <p className="font-bold">Filialın adı:{filial.ad}</p>
+              <p className="">Filialın ünvanı:{filial.fullAddress}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

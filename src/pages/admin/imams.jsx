@@ -114,13 +114,15 @@ const Imams = () => {
           >
             <div className="flex justify-between items-center px-4">
               <div>
-                <p className="font-semibold text-lg">
+                <p className="font-normal text-sm">
                   Imam:{mescid.name || ""} {mescid.surname || ""}
                 </p>
-
-                <p className="text-base text-gray-600">
-                  Mescid:{mescid.mescidname || ""} — Unvan:
-                  {mescid.mescid?.location || ""}
+                <p className="text-lg text-gray-900 font-bold">
+                  Mescid:{mescid.mescidname || ""}
+                </p>
+                <p>
+                  Unvan:
+                  {mescid.mescid.location || ""}
                 </p>
               </div>
               {/* Switch Toggle */}
@@ -165,7 +167,7 @@ const Imams = () => {
                   onClick={() => handleEdit(mescid)}
                   className="bg-blue-500 cursor-pointer text-white w-full py-1 mb-2 rounded hover:bg-blue-600 text-lg transition"
                 >
-                  {isEditing ? "Kapat" : "Değiştir"}
+                  {isEditing ? "Bağla" : "Dəyiş"}
                 </button>
               </div>
             </div>
@@ -308,13 +310,13 @@ const Imams = () => {
                     onClick={() => setEditId(null)}
                     className="px-3 py-1 rounded cursor-pointer bg-gray-300 hover:bg-gray-400 transition text-sm"
                   >
-                    İptal
+                    Ləğv et
                   </button>
                   <button
                     onClick={handleSave}
                     className="px-3 py-1 rounded cursor-pointer bg-green-500 hover:bg-green-600 text-white transition text-sm"
                   >
-                    Kaydet
+                    Qeyd et
                   </button>
                 </div>
               </div>

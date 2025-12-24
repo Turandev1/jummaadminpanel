@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { subcategoriesMap } from "../utils/subcategories";
+import useAuth from "../redux/authredux";
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
 const UPLOAD_PRESET = "product_photos";
@@ -18,6 +19,12 @@ const EditModal = ({ product, onClose }) => {
   const [sending, setSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  // EditModal daxilində state-ə əlavə edin:
+  const { user } = useAuth();
+  const [selectedBranches, setSelectedBranches] = useState(
+    product.filiallar || []
+  );
+  const allMarketBranches = user?.market?.address || []; // Satıcının bütün filialları
   // const { user } = useAuth(); // Assuming useAuth is available
   const [newImages, setNewImages] = useState([]); // Newly selected files to upload
   const [removedImagePublicIds, setRemovedImagePublicIds] = useState([]);
@@ -35,6 +42,7 @@ const EditModal = ({ product, onClose }) => {
     kateqoriya: product.kateqoriya || "",
     altkateqoriya: product.altkateqoriya || "",
     qiymet: product.qiymet || 0,
+    terkibi: product.terkibi || "",
     endirimliqiymet: product.endirimliqiymet || 0,
     depo: product.depo || 0,
     brand: product.brand || "",
@@ -175,6 +183,7 @@ const EditModal = ({ product, onClose }) => {
     // 4) Payload hazırlayın
     const payload = {
       ...formData,
+      phone: user.phone,
       productid: product._id, // API üçün məhsul ID-si
       mehsuladi:
         formData.mehsuladi.charAt(0).toUpperCase() +
@@ -186,6 +195,8 @@ const EditModal = ({ product, onClose }) => {
       productphotos: finalProductPhotos, // Qorunanlar + Yenilər
       removedphotos: removedImagePublicIds, // Silinməsi tələb olunan public ID-lər
       miqdari: formData.miqdari,
+      filiallar: selectedBranches,
+      terkibi: formData.terkibi,
       depo: formData.depo,
     };
 
@@ -233,7 +244,7 @@ const EditModal = ({ product, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity duration-300 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl p-6 transform transition-all duration-300 scale-100">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-[80%] h-full p-6 transform transition-all duration-300 scale-100">
         <div className="flex justify-between items-center border-b pb-3 mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
             Məhsulu Redaktə Et
@@ -275,7 +286,20 @@ const EditModal = ({ product, onClose }) => {
                 value={formData.aciqlama}
                 onChange={handleChange}
                 placeholder="Məhsul haqqında açıqlama (vergüllə ayırın)"
-                className="mt-1 block w-full h-60 rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
+                className="mt-1 block w-full h-40 rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
+                rows={3}
+                required
+              />
+            </label>
+
+            <label className="block col-span-2">
+              <span className="text-sm font-medium text-gray-700">Tərkibi</span>
+              <textarea
+                name="terkibi"
+                value={formData.terkibi}
+                onChange={handleChange}
+                placeholder="Məhsulun tərkibi (vergüllə ayırın)"
+                className="mt-1 block w-full h-40 rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
                 rows={3}
                 required
               />
@@ -410,7 +434,7 @@ const EditModal = ({ product, onClose }) => {
             </label>
 
             {/* Brand */}
-            <label className="block col-span-2">
+            <label className="block col-span-1">
               <span className="text-sm font-medium text-gray-700">
                 Brand (Varsa)
               </span>
@@ -423,6 +447,62 @@ const EditModal = ({ product, onClose }) => {
                 className="mt-1 block w-full rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150 capitalize"
               />
             </label>
+
+            <div className="col-span-2 border-t pt-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">
+                Filiallarda Mövcudluq
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 bg-gray-50 p-3 rounded-lg border">
+                {allMarketBranches.map((branch) => {
+                  // Bu filialın məhsulda artıq seçilib-seçilmədiyini yoxlayırıq
+                  const isChecked = selectedBranches.some(
+                    (b) => b.id === branch._id
+                  );
+
+                  return (
+                    <label
+                      key={branch._id}
+                      className="flex items-center space-x-3 p-2 hover:bg-white rounded cursor-pointer transition"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {
+                          if (isChecked) {
+                            // Siyahıdan çıxar
+                            setSelectedBranches(
+                              selectedBranches.filter(
+                                (b) => b.id !== branch._id
+                              )
+                            );
+                          } else {
+                            // Siyahıya əlavə et (yalnız lazım olan məlumatları)
+                            setSelectedBranches([
+                              ...selectedBranches,
+                              {
+                                id: branch._id,
+                                ad: branch.ad,
+                                fullAddress: branch.address.fullAddress,
+                                location: branch.location,
+                              },
+                            ]);
+                          }
+                        }}
+                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">
+                          {branch.ad}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {branch.address.fullAddress}
+                        </p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* --- GELİŞTİRİLMİŞ MEVCUT ŞEKİLLERİ GÖRÜNTÜLEME --- */}
             {allExistingPhotos.length > 0 && (

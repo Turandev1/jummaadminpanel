@@ -23,6 +23,9 @@ const AddMehsul = () => {
     brand: "",
     miqdar: "",
     olcuvahidi: "",
+    kutle: "",
+    terkibi: "",
+    secilmisfiliallar: [],
   });
   const { user } = useAuth();
   const [images, setImages] = useState([]); // seçilen resimleri burada tutacağız
@@ -32,6 +35,36 @@ const AddMehsul = () => {
   const dropRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
+
+  const handleBranchSelect = (addr) => {
+    setFormData((prev) => {
+      const isSelected = prev.secilmisfiliallar.find((b) => b.id === addr._id);
+
+      if (isSelected) {
+        // Əgər artıq seçilibsə, massivdən çıxar
+        return {
+          ...prev,
+          secilmisfiliallar: prev.secilmisfiliallar.filter(
+            (b) => b.id !== addr._id
+          ),
+        };
+      } else {
+        // Seçilməyibsə, tam obyekt olaraq əlavə et
+        return {
+          ...prev,
+          secilmisfiliallar: [
+            ...prev.secilmisfiliallar,
+            {
+              id: addr._id,
+              ad: addr.ad,
+              fullAddress: addr.address.fullAddress,
+              location: addr.location, // Kuryer üçün koordinatlar mütləq lazımdır
+            },
+          ],
+        };
+      }
+    });
+  };
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -146,6 +179,7 @@ const AddMehsul = () => {
         ad: user.ad,
         soyad: user.soyad,
         email: user.email,
+        phone: user.phone,
         marketname: user.market?.ad,
         mehsuladi:
           formData.name.charAt(0).toUpperCase() +
@@ -162,6 +196,9 @@ const AddMehsul = () => {
         olcuvahidi: formData.olcuvahidi,
         miqdari: formData.miqdar,
         productphotos: validImages,
+        terkibi: formData.terkibi,
+        kutle: formData.kutle,
+        filiallar: formData.secilmisfiliallar,
       });
 
       setSending(false);
@@ -179,6 +216,9 @@ const AddMehsul = () => {
           brand: "",
           miqdar: "",
           olcuvahidi: "",
+          secilmisfiliallar: [],
+          kutle: "",
+          terkibi: "",
         });
 
         setImages([]);
@@ -220,26 +260,26 @@ const AddMehsul = () => {
             name="description"
             value={formData.description}
             onChange={handleChange}
-            placeholder="Məhsul haqqında açıqlama"
-            className="w-full border capitalize border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+            placeholder="Məhsul haqqında açıqlama.Baş hərflər avtomatik böyüdülür.Başlıqların sonuna 2 nöqtə qoyun və maddələri vergüllə ayırın."
+            className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
             rows={3}
             required
           />
         </div>
 
         {/* terkibi */}
-        {/* <div>
+        <div>
           <label className="block text-gray-700 mb-1">Tərkibi</label>
           <textarea
             name="terkibi"
             value={formData.terkibi}
             onChange={handleChange}
-            placeholder="Məhsulun tərkibini yazın. Vergüllə ayırın."
+            placeholder="Məhsulun tərkibini yazın.Baş hərflər avtomatik böyüdülür.Başlıqların sonuna 2 nöqtə qoyun və maddələri vergüllə ayırın."
             rows={3}
             required
             className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
           ></textarea>
-        </div> */}
+        </div>
 
         {/* Kategori / Alt kategori */}
         <div className="grid grid-cols-2 gap-4">
@@ -286,18 +326,6 @@ const AddMehsul = () => {
 
         {/* miqdar/ceki */}
         <div className="grid grid-cols-2 gap-4">
-          {/* <div>
-            <label className="block text-gray-700 mb-1">Miqdar</label>
-            <input
-              type="number"
-              name="miqdar"
-              value={formData.miqdar}
-              onChange={handleChange}
-              placeholder="Məhsulun miqdarını yazın"
-              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
-              required
-            />
-          </div> */}
           <div>
             <label className="block text-gray-700 mb-1">Miqdar</label>
             <input
@@ -305,7 +333,7 @@ const AddMehsul = () => {
               name="miqdar"
               value={formData.miqdar}
               onChange={handleChange}
-              placeholder="Məhsulun kütləsi"
+              placeholder="Məhsulun miqdarı"
               className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
               required
             />
@@ -344,7 +372,9 @@ const AddMehsul = () => {
             />
           </div>
           <div>
-            <label className="block text-gray-700 mb-1">Endirimli qiymət (AZN)</label>
+            <label className="block text-gray-700 mb-1">
+              Endirimli qiymət (AZN)
+            </label>
             <input
               type="number"
               name="endirimliqiymet"
@@ -352,7 +382,6 @@ const AddMehsul = () => {
               onChange={handleChange}
               placeholder="Qiyməti yazın"
               className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
-              required
             />
           </div>
           <div>
@@ -367,20 +396,18 @@ const AddMehsul = () => {
               required
             />
           </div>
-          {/* <div>
-            <label className="block text-gray-700 mb-1">Məzənnə</label>
-            <select
-              name="olcuvahidi"
-              value={formData.olcuvahidi}
+          <div>
+            <label className="block text-gray-700 mb-1">Məhsulun kütləsi</label>
+            <input
+              type="number"
+              name="kutle"
+              value={formData.kutle}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2 outline-none cursor-pointer"
+              placeholder="Məhsulun kütləsi (kq ilə)"
+              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
               required
-            >
-              <option value="">Məzənnə seç</option>
-              <option value="AZN">AZN</option>
-              <option value="USD">USD</option>
-            </select>
-          </div> */}
+            />
+          </div>
           <div className="grid grid-cols-1">
             <label className="block text-gray-700 mb-1">Brand (Varsa)</label>
             <input
@@ -399,7 +426,7 @@ const AddMehsul = () => {
         {/* Resim yükleme */}
         <div className="flex flex-col gap-3">
           <label className="text-sm text-gray-700 font-medium pt-2">
-            Şəkil yüklə (İstəyə bağlı)
+            Şəkil yüklə (Ən az 1 şəkil tələb olunur)
           </label>
 
           {/* Drag & drop alanı */}
@@ -469,6 +496,50 @@ const AddMehsul = () => {
                 Hamısını sil ({images.length})
               </button>
             </>
+          )}
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-300">
+          <label className="block text-gray-700 font-bold mb-2">
+            Məhsulun satılacağı filialları seçin:
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {user?.market?.address?.map((addr) => {
+              const isChecked = formData.secilmisfiliallar.some(
+                (b) => b.id === addr._id
+              );
+              return (
+                <div
+                  key={addr._id}
+                  onClick={() => handleBranchSelect(addr)}
+                  className={`flex col-span-2 items-start max-h-md p-3 border rounded-md cursor-pointer transition-all ${
+                    isChecked
+                      ? "border-indigo-600 bg-indigo-50"
+                      : "border-gray-300 bg-white"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    readOnly
+                    className="mt-1 h-4 w-4 text-indigo-600 cursor-pointer"
+                  />
+                  <div className="ml-3">
+                    <p className="text-sm font-semibold text-gray-800">
+                      {addr.ad}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {addr.address.fullAddress}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {formData.secilmisfiliallar.length === 0 && (
+            <p className="text-xs text-orange-600 mt-2">
+              ! Ən azı bir filial seçməlisiniz.
+            </p>
           )}
         </div>
 

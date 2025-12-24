@@ -14,6 +14,7 @@ const ChangePassword = ({ defaultEmail }) => {
   const [shownewpass, setshownewpass] = useState(false);
   const [showconfirmpass, setshowconfirmpass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [enableform, setenableform] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -66,10 +67,23 @@ const ChangePassword = ({ defaultEmail }) => {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-6 mt-8 mb-20">
+    <div className="bg-white shadow-lg rounded-xl p-6 mt-8 mb-20 relative">
       <h2 className="text-lg font-semibold mb-4">Şifrəni dəyiş</h2>
 
-      <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <button
+        onClick={() => setenableform(true)}
+        className={`absolute right-5 top-3 px-8 py-2 cursor-pointer hover:scale-110 duration-200 transition-all rounded-full bg-indigo-500 text-white ${
+          enableform ? "hidden" : ""
+        }`}
+      >
+        DƏYİŞ
+      </button>
+
+      <form
+        className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${
+          enableform ? "" : "opacity-50"
+        }`}
+      >
         {/* EMAIL */}
         <div className="flex flex-col md:col-span-1">
           <label className="text-sm text-gray-600 mb-1">Email</label>
@@ -78,6 +92,7 @@ const ChangePassword = ({ defaultEmail }) => {
             name="email"
             autoComplete="off"
             value={form.email}
+            disabled={!enableform}
             onChange={handleChange}
             className="border rounded-md px-3 py-2 outline-none focus:bg-green-100 focus:ring-2 focus:ring-green-400 duration-300 transition-all"
             placeholder="Email"
@@ -93,11 +108,13 @@ const ChangePassword = ({ defaultEmail }) => {
             value={form.password}
             autoComplete="off"
             onChange={handleChange}
+            disabled={!enableform}
             className="border rounded-md px-3 py-2 outline-none focus:bg-green-100 focus:ring-2 focus:ring-green-400 duration-300 transition-all"
             placeholder="Köhnə şifrə"
           />
           <button
             type="button"
+            disabled={!enableform}
             onClick={() => setshowoldpass(!showoldpass)}
             className="absolute right-3 bottom-3 cursor-pointer hover:scale-115 duration-300 transition-all ease-in-out"
           >
@@ -114,11 +131,13 @@ const ChangePassword = ({ defaultEmail }) => {
             autoComplete="new-password"
             value={form.newpassword}
             onChange={handleChange}
+            disabled={!enableform}
             className="border rounded-md px-3 py-2 outline-none focus:bg-green-100 focus:ring-2 focus:ring-green-400 duration-300 transition-all"
             placeholder="Yeni şifrə"
           />
           <button
             type="button"
+            disabled={!enableform}
             onClick={() => setshownewpass(!shownewpass)}
             className="absolute right-3 bottom-3 cursor-pointer hover:scale-115 duration-300 transition-all ease-in-out"
           >
@@ -137,11 +156,13 @@ const ChangePassword = ({ defaultEmail }) => {
             autoComplete="new-password"
             value={form.confirmpassword}
             onChange={handleChange}
+            disabled={!enableform}
             className="border rounded-md px-3 py-2 outline-none focus:bg-green-100 focus:ring-2 focus:ring-green-400 duration-300 transition-all"
             placeholder="Yeni şifrəni təkrar edin"
           />
           <button
             type="button"
+            disabled={!enableform}
             onClick={() => setshowconfirmpass(!showconfirmpass)}
             className="absolute right-3 bottom-3 cursor-pointer hover:scale-115 duration-300 transition-all ease-in-out"
           >
@@ -152,10 +173,21 @@ const ChangePassword = ({ defaultEmail }) => {
 
       <button
         onClick={handleSubmit}
-        disabled={loading}
-        className="mt-6 bg-indigo-600 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-indigo-800 transition disabled:opacity-50"
+        disabled={loading || !enableform}
+        className={`mt-6 bg-indigo-600 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-indigo-800 transition disabled:opacity-50 ${
+          enableform ? "" : "opacity-50"
+        }`}
       >
         {loading ? "Dəyişdirilir..." : "Şifrəni dəyiş"}
+      </button>
+      <button
+        onClick={() => setenableform(false)}
+        disabled={loading || !enableform}
+        className={`mt-6 bg-indigo-600 cursor-pointer text-white mx-6 px-6 py-2 rounded-lg hover:bg-indigo-800 transition disabled:opacity-50 ${
+          enableform ? "" : "hidden"
+        }`}
+      >
+        Ləğv et
       </button>
     </div>
   );

@@ -305,7 +305,7 @@ const Sifarisler = () => {
             />
             <PricingRow
               label="Kargo (Çatdırılma) Haqqı"
-              value={order.shipping.fee}
+              value={order.catdirilma?.fee}
               color="text-gray-700"
             />
             <PricingRow
