@@ -301,7 +301,6 @@ const EditModal = ({ product, onClose }) => {
                 placeholder="Məhsulun tərkibi (vergüllə ayırın)"
                 className="mt-1 block w-full h-40 rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
                 rows={3}
-                required
               />
             </label>
 

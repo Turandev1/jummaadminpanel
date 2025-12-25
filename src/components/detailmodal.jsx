@@ -73,10 +73,10 @@ const Detailmodal = ({ mehsul, onClose }) => {
             Ölçü vahidi: {mehsul.olcuvahidi}
           </span>
           <span className="text-lg font-medium text-gray-700">
-            Ölçü vahidi: {mehsul.aciqlama}
+            Açıqlama: {mehsul.aciqlama}
           </span>{" "}
           <span className="text-lg font-medium text-gray-700">
-            Ölçü vahidi: {mehsul.terkibi}
+            Tərkib: {mehsul.terkibi}
           </span>
         </div>
         <div className="grid grid-cols-2">

@@ -269,14 +269,13 @@ const AddMehsul = () => {
 
         {/* terkibi */}
         <div>
-          <label className="block text-gray-700 mb-1">Tərkibi</label>
+          <label className="block text-gray-700 mb-1">Tərkibi(Istəyə bağlı)</label>
           <textarea
             name="terkibi"
             value={formData.terkibi}
             onChange={handleChange}
             placeholder="Məhsulun tərkibini yazın.Baş hərflər avtomatik böyüdülür.Başlıqların sonuna 2 nöqtə qoyun və maddələri vergüllə ayırın."
             rows={3}
-            required
             className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
           ></textarea>
         </div>
