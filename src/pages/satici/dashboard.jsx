@@ -365,9 +365,12 @@ const Dashboard = () => {
         toast.success("Profil məlumatları uğurla dəyişdirildi");
       }
       setEditable(false);
+      setiseditable(false);
     } catch (error) {
       console.error(error);
       toast.error("Dəyişdirilə bilmədi");
+      setEditable(false);
+      setiseditable(false);
     }
   };
 
@@ -463,7 +466,6 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
-
 
   const handleDeleteAddress = async (addressId) => {
     if (!window.confirm("Bu ünvanı silmək istədiyinizə əminsiniz?")) return;
@@ -684,9 +686,9 @@ const Dashboard = () => {
               <textarea
                 rows={4}
                 type="text"
-                name="marketDescription"
+                name="aciqlama"
                 placeholder="Bizə özünüzdən və satıcı fəaliyyətinizdən danışın,Bu hissə istifadəçilərə göstərilmir"
-                value={formData.marketDescription}
+                value={formData.aciqlama}
                 onChange={handleInput}
                 className="border rounded-md px-3 py-2"
               />
@@ -697,10 +699,10 @@ const Dashboard = () => {
                 Market haqqında.Bu hissə marketdə istifadəçilərə göstəriləcək
               </label>
               <textarea
-                name="marketAbout"
+                name="haqqinda"
                 rows="4"
                 placeholder="İstifadəçilərə özünüz və satdığınız mallar haqqında məlumat verin."
-                value={formData.marketAbout}
+                value={formData.haqqinda}
                 onChange={handleInput}
                 className="border rounded-md px-3 py-2 resize-none"
               />
