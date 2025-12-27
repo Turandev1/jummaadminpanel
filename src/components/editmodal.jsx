@@ -19,13 +19,31 @@ const EditModal = ({ product, onClose }) => {
   const [sending, setSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  // EditModal daxilində state-ə əlavə edin:
+  const [deliveryType, setDeliveryType] = useState(
+    product.deliveryoptions.deliveryType || "SELF"
+  );
+  const [selfDeliveryFee, setSelfDeliveryFee] = useState(
+    product.deliveryoptions.selfDeliveryFee || ""
+  );
+  const initialThresholdType =
+    product.deliveryoptions.freedeliverythresholdamount > 0
+      ? "price"
+      : product.deliveryoptions.freedeliverythresholdcount > 0
+      ? "count"
+      : "yoxdur";
+  const [freeThresholdType, setFreeThresholdType] =
+    useState(initialThresholdType);
+  const initialThresholdValue =
+    product.deliveryoptions.freedeliverythresholdamount ||
+    product.deliveryoptions.freedeliverythresholdcount ||
+    "";
+  const [freeThresholdValue, setFreeThresholdValue] = useState(
+    initialThresholdValue
+  );
   const { user } = useAuth();
   const [selectedBranches, setSelectedBranches] = useState(
     product.filiallar || []
   );
-  const allMarketBranches = user?.market?.address || []; // Satıcının bütün filialları
-  // const { user } = useAuth(); // Assuming useAuth is available
   const [newImages, setNewImages] = useState([]); // Newly selected files to upload
   const [removedImagePublicIds, setRemovedImagePublicIds] = useState([]);
 
@@ -149,11 +167,94 @@ const EditModal = ({ product, onClose }) => {
     }
   };
 
+  const handleBranchSelect = (addr) => {
+    setSelectedBranches((prev) => {
+      const isSelected = prev.find(
+        (b) => b.id === addr._id || b._id === addr._id
+      );
+
+      if (isSelected) {
+        return prev.filter((b) => b.id !== addr._id && b._id !== addr._id);
+      } else {
+        return [
+          ...prev,
+          {
+            id: addr._id,
+            ad: addr.ad,
+            fullAddress: addr.address.fullAddress,
+            location: addr.location,
+          },
+        ];
+      }
+    });
+  };
+
   const handleSave = async (e) => {
     if (e) e.preventDefault();
     setIsSaving(true);
     setUploading(true);
     setSending(false);
+
+    const deliveryFeeNum = parseFloat(selfDeliveryFee);
+    const thresholdValueNum = parseFloat(freeThresholdValue);
+    const priceNum = parseFloat(formData.qiymet);
+    const discountPriceNum = parseFloat(formData.endirimliqiymet);
+
+    switch (true) {
+      // 2. Qiymət məntiqləri
+      case !!formData.endirimliqiymet && !formData.qiymet:
+        toast.error(
+          "Endirimli qiymət varsa qiymət də daxil edilməlidir. Zəhmət olmasa hər iki xananı doldurun",
+          { autoClose: 6000 }
+        );
+        setUploading(false);
+        setIsSaving(false);
+        return;
+
+      case discountPriceNum > priceNum:
+        toast.error("Endirimli qiymət əsas qiymətdən böyük ola bilməz.", {
+          autoClose: 4000,
+        });
+        setUploading(false);
+        setIsSaving(false);
+        return;
+
+      // 3. YANGO Çatdırılma validasiyası
+      case deliveryType === "YANGO" && selectedBranches.length === 0:
+        toast.error("Yango Delivery üçün ən azı bir filial seçilməlidir!");
+        setUploading(false);
+        setIsSaving(false);
+        return;
+
+      // 4. SELF (Özüm çatdırıram) - Qiymət yoxlaması
+      case deliveryType === "SELF" && (!selfDeliveryFee || deliveryFeeNum < 0):
+        toast.error(
+          "Özüm çatdırıram seçdikdə çatdırılma haqqı (AZN) daxil edilməlidir!"
+        );
+        setUploading(false);
+        setIsSaving(false);
+        return;
+
+      // 5. SELF - Pulsuz limit (Threshold) yoxlaması
+      case deliveryType === "SELF" &&
+        freeThresholdType !== "yoxdur" &&
+        (!freeThresholdValue || thresholdValueNum <= 0): {
+        const thresholdMsg =
+          freeThresholdType === "price"
+            ? "Zəhmət olmasa pulsuz çatdırılma üçün minimum məbləği daxil edin!"
+            : "Zəhmət olmasa pulsuz çatdırılma üçün minimum məhsul sayını daxil edin!";
+        toast.error(thresholdMsg);
+        setUploading(false);
+        setIsSaving(false);
+        return;
+      }
+
+      // 6. Ümumi Filial yoxlaması (Hər ehtimala qarşı)
+
+      default:
+        // Heç bir case-ə girmədisə, validasiya keçildi deməkdir.
+        break;
+    }
 
     // 1) Yeni şəkilləri yükləyin
     const uploadedImages = await Promise.all(
@@ -198,6 +299,17 @@ const EditModal = ({ product, onClose }) => {
       filiallar: selectedBranches,
       terkibi: formData.terkibi,
       depo: formData.depo,
+      deliveryType, // Yeni state
+      selfDeliveryFee:
+        deliveryType === "SELF" ? parseFloat(selfDeliveryFee) || 0 : 0,
+      freedeliverythresholdamount:
+        deliveryType === "SELF" && freeThresholdType === "price"
+          ? parseInt(freeThresholdValue) || 0
+          : 0,
+      freedeliverythresholdcount:
+        deliveryType === "SELF" && freeThresholdType === "count"
+          ? parseInt(freeThresholdValue) || 0
+          : 0,
     };
 
     // 5) Backend'ə göndərin
@@ -224,6 +336,7 @@ const EditModal = ({ product, onClose }) => {
   };
 
   const handleproductdelete = async (id) => {
+    setIsDeleting(true);
     try {
       console.log("id:", id);
       const res = await api.delete(`${API_URLS.SATICI.DELETEPRODUCT}/${id}`);
@@ -232,10 +345,14 @@ const EditModal = ({ product, onClose }) => {
       if (data.success) {
         toast.success(data.mesaj || "Məhsul uğurla silindi");
       }
+      setIsDeleting(false);
     } catch (error) {
       console.error(error);
+      setIsDeleting(false);
+
       toast.error(error.response?.data?.hata || "Məhsul silinə bilmədi");
     } finally {
+      setIsDeleting(false);
       onClose();
     }
   };
@@ -447,60 +564,169 @@ const EditModal = ({ product, onClose }) => {
               />
             </label>
 
-            <div className="col-span-2 border-t pt-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">
-                Filiallarda Mövcudluq
+            {/* deliveryoptions */}
+            <div className="mt-6 p-5 bg-white rounded-xl border border-gray-200 shadow-sm block col-span-2">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Çatdırılma Seçimi
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 bg-gray-50 p-3 rounded-lg border">
-                {allMarketBranches.map((branch) => {
-                  // Bu filialın məhsulda artıq seçilib-seçilmədiyini yoxlayırıq
-                  const isChecked = selectedBranches.some(
-                    (b) => b.id === branch._id
-                  );
 
-                  return (
-                    <label
-                      key={branch._id}
-                      className="flex items-center space-x-3 p-2 hover:bg-white rounded cursor-pointer transition"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => {
-                          if (isChecked) {
-                            // Siyahıdan çıxar
-                            setSelectedBranches(
-                              selectedBranches.filter(
-                                (b) => b.id !== branch._id
-                              )
-                            );
-                          } else {
-                            // Siyahıya əlavə et (yalnız lazım olan məlumatları)
-                            setSelectedBranches([
-                              ...selectedBranches,
-                              {
-                                id: branch._id,
-                                ad: branch.ad,
-                                fullAddress: branch.address.fullAddress,
-                                location: branch.location,
-                              },
-                            ]);
-                          }
-                        }}
-                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
-                      />
+              {/* Seçim Düymələri */}
+              <div className="flex gap-4 mb-6">
+                <button
+                  type="button"
+                  onClick={() => setDeliveryType("SELF")}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium border transition-all cursor-pointer ${
+                    deliveryType === "SELF"
+                      ? "bg-green-600 border-green-600 text-white shadow-md"
+                      : "bg-gray-50 border-gray-300 text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  Özüm çatdırıram
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setDeliveryType("YANGO")}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium border transition-all cursor-pointer ${
+                    deliveryType === "YANGO"
+                      ? "bg-green-600 border-green-600 text-white shadow-md"
+                      : "bg-gray-50 border-gray-300 text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  Yango Delivery
+                </button>
+              </div>
+
+              {/* Özüm Çatdırıram Seçildikdə Çıxan Sahələr */}
+              {deliveryType === "SELF" && (
+                <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200 animate-fadeIn">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Çatdırılma haqqı (AZN)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Məs: 3.50"
+                      className="w-full p-2.5 bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 transition-all duration-300 outline-none"
+                      value={selfDeliveryFee}
+                      onChange={(e) => setSelfDeliveryFee(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Hansı halda çatdırılma pulsuzdur?
+                    </label>
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        type="button"
+                        onClick={() => setFreeThresholdType("price")}
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+                          freeThresholdType === "price"
+                            ? "bg-green-100 border-green-500 text-green-700"
+                            : "bg-white border-gray-300 text-gray-500"
+                        }`}
+                      >
+                        Məbləğə görə
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFreeThresholdType("count")}
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+                          freeThresholdType === "count"
+                            ? "bg-green-100 border-green-500 text-green-700"
+                            : "bg-white border-gray-300 text-gray-500"
+                        }`}
+                      >
+                        Sayına görə
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFreeThresholdType("yoxdur")}
+                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+                          freeThresholdType === "yoxdur"
+                            ? "bg-green-100 border-green-500 text-green-700"
+                            : "bg-white border-gray-300 text-gray-500"
+                        }`}
+                      >
+                        Yoxdur
+                      </button>
+                    </div>
+                    {freeThresholdType !== "yoxdur" && (
                       <div>
-                        <p className="text-sm font-semibold text-gray-800">
-                          {branch.ad}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {branch.address.fullAddress}
+                        <input
+                          type="number"
+                          placeholder={
+                            freeThresholdType === "price"
+                              ? "Min. məbləğ (AZN)"
+                              : "Min. məhsul sayı"
+                          }
+                          className="w-full p-2.5 bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 transition-all duration-300 outline-none"
+                          value={freeThresholdValue}
+                          onChange={(e) =>
+                            setFreeThresholdValue(e.target.value)
+                          }
+                        />
+                        <p className="mt-2 text-[11px] text-gray-500 italic">
+                          * Alıcı {freeThresholdValue || "..."}{" "}
+                          {freeThresholdType === "price"
+                            ? "AZN-dən"
+                            : "ədəddən"}{" "}
+                          yuxarı sifariş verdikdə çatdırılma pulsuz olacaq.
                         </p>
                       </div>
-                    </label>
-                  );
-                })}
-              </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Yango Seçildikdə Çıxan Mesaj */}
+              {deliveryType === "YANGO" && (
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-300 w-full">
+                  <label className="block text-gray-700 font-bold mb-2">
+                    Məhsulun satılacağı filialları seçin:
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {user?.market?.address?.map((addr) => {
+                      const isChecked = selectedBranches.some(
+                        (b) => b.id === addr._id
+                      );
+                      return (
+                        <div
+                          key={addr._id}
+                          onClick={() => handleBranchSelect(addr)}
+                          className={`flex col-span-2 items-start max-h-md p-3 border rounded-md cursor-pointer transition-all ${
+                            isChecked
+                              ? "border-indigo-600 bg-indigo-50"
+                              : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            readOnly
+                            className="mt-1 h-4 w-4 text-indigo-600 cursor-pointer"
+                          />
+                          <div className="ml-3">
+                            <p className="text-sm font-semibold text-gray-800">
+                              {addr.ad}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {addr.address.fullAddress}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {selectedBranches.length === 0 && (
+                    <p className="text-xs text-orange-600 mt-2">
+                      ! Ən azı bir filial seçməlisiniz.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* --- GELİŞTİRİLMİŞ MEVCUT ŞEKİLLERİ GÖRÜNTÜLEME --- */}

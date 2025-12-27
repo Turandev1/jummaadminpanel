@@ -35,6 +35,10 @@ const AddMehsul = () => {
   const dropRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [deliveryType, setDeliveryType] = useState("SELF"); // 'SELF' və ya 'YANGO'
+  const [selfDeliveryFee, setSelfDeliveryFee] = useState("");
+  const [freeThresholdType, setFreeThresholdType] = useState("yoxdur"); // 'price' və ya 'count'
+  const [freeThresholdValue, setFreeThresholdValue] = useState("");
 
   const handleBranchSelect = (addr) => {
     setFormData((prev) => {
@@ -141,39 +145,101 @@ const AddMehsul = () => {
       return null;
     }
   };
+  //
 
+  // mehsul yaradir
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setUploading(true);
-    setSending(false);
 
-    // 1) Şəkillər yüklənir
-    const uploadedImages = await Promise.all(
-      images.map((img) => uploadFileToCloudinary(img))
-    );
+    // Switch(true) blokuna girməzdən əvvəl məbləğləri parse edək (təkrar istifadə üçün)
+    const deliveryFeeNum = parseFloat(selfDeliveryFee);
+    const thresholdValueNum = parseFloat(freeThresholdValue);
+    const priceNum = parseFloat(formData.qiymet);
+    const discountPriceNum = parseFloat(formData.endirimliqiymet);
 
-    setUploading(false);
+    // --- VALIDASİYA SWITCH BLOQU ---
+    switch (true) {
+      // 1. Şəkil yoxlaması
+      case images.length === 0:
+        toast.error(
+          "Proqramda göstərilməsi üçün məhsula aid heç olmasa 1 şəkil seçilməlidir",
+          { autoClose: 3000 }
+        );
+        return;
 
-    const validImages = uploadedImages.filter(Boolean);
-    if (!validImages.length && images.length > 0) {
-      toast.error("Heç bir şəkil Cloudinary-ə yüklənmədi");
-      return;
+      // 2. Qiymət məntiqləri
+      case !!formData.endirimliqiymet && !formData.qiymet:
+        toast.error(
+          "Endirimli qiymət varsa qiymət də daxil edilməlidir. Zəhmət olmasa hər iki xananı doldurun",
+          { autoClose: 6000 }
+        );
+        return;
+
+      case discountPriceNum > priceNum:
+        toast.error("Endirimli qiymət əsas qiymətdən böyük ola bilməz.", {
+          autoClose: 4000,
+        });
+        return;
+
+      // 3. YANGO Çatdırılma validasiyası
+      case deliveryType === "YANGO" && formData.secilmisfiliallar.length === 0:
+        toast.error("Yango Delivery üçün ən azı bir filial seçilməlidir!");
+        return;
+
+      // 4. SELF (Özüm çatdırıram) - Qiymət yoxlaması
+      case deliveryType === "SELF" && (!selfDeliveryFee || deliveryFeeNum < 0):
+        toast.error(
+          "Özüm çatdırıram seçdikdə çatdırılma haqqı (AZN) daxil edilməlidir!"
+        );
+        return;
+
+      // 5. SELF - Pulsuz limit (Threshold) yoxlaması
+      case deliveryType === "SELF" &&
+        freeThresholdType !== "yoxdur" &&
+        (!freeThresholdValue || thresholdValueNum <= 0): {
+        const thresholdMsg =
+          freeThresholdType === "price"
+            ? "Zəhmət olmasa pulsuz çatdırılma üçün minimum məbləği daxil edin!"
+            : "Zəhmət olmasa pulsuz çatdırılma üçün minimum məhsul sayını daxil edin!";
+        toast.error(thresholdMsg);
+        return;
+      }
+
+      // 6. Ümumi Filial yoxlaması (Hər ehtimala qarşı)
+
+      default:
+        // Heç bir case-ə girmədisə, validasiya keçildi deməkdir.
+        break;
     }
 
-    const formatteddescription = formData.description
-      .split(",")
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0)
-      .map(
-        (item) => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()
-      );
-
-    // 2) Backend-ə məlumat göndərilir
-    setSending(true);
-
-    const userId = user.id || user._id;
+    // --- VALIDASİYA KEÇİLDİSƏ PROSES BAŞLAYIR ---
+    setUploading(true);
 
     try {
+      // 1) Şəkillər Cloudinary-ə
+      const uploadedImages = await Promise.all(
+        images.map((img) => uploadFileToCloudinary(img))
+      );
+      setUploading(false);
+
+      const validImages = uploadedImages.filter(Boolean);
+      if (!validImages.length && images.length > 0) {
+        toast.error("Şəkillər yüklənmədi.");
+        return;
+      }
+      const formatteddescription = formData.description
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+        .map(
+          (item) => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()
+        );
+
+      // 2) Backend-ə məlumat göndərilir
+      setSending(true);
+
+      const userId = user.id || user._id;
+
       const res = await api.post(API_URLS.SATICI.MEHSULQOY, {
         id: userId,
         ad: user.ad,
@@ -198,13 +264,22 @@ const AddMehsul = () => {
         productphotos: validImages,
         terkibi: formData.terkibi,
         kutle: formData.kutle,
+        deliveryType,
+        selfDeliveryFee: deliveryType === "SELF" ? selfDeliveryFee : 0,
+        freedeliverythresholdamount:
+          deliveryType === "SELF" && freeThresholdType === "price"
+            ? parseInt(freeThresholdValue)
+            : 0,
+        freedeliverythresholdcount:
+          deliveryType === "SELF" && freeThresholdType === "count"
+            ? parseInt(freeThresholdValue)
+            : 0,
         filiallar: formData.secilmisfiliallar,
       });
 
-      setSending(false);
-
       if (res.data.success) {
         toast.success("Məhsul uğurla yaradıldı");
+        // Formu təmizləmə kodları...
         setFormData({
           name: "",
           description: "",
@@ -220,13 +295,15 @@ const AddMehsul = () => {
           kutle: "",
           terkibi: "",
         });
-
+        setDeliveryType("SELF");
+        setSelfDeliveryFee("");
+        setFreeThresholdValue("");
+        setFreeThresholdType("yoxdur");
         setImages([]);
-      } else {
-        toast.error("API cavabı success = false");
       }
+      setSending(false);
     } catch (error) {
-      console.error("API error:", error);
+      console.error("Xəta:", error);
       toast.error("Məhsul əlavə olunarkən xəta baş verdi");
       setSending(false);
     }
@@ -252,7 +329,6 @@ const AddMehsul = () => {
             required
           />
         </div>
-
         {/* Açıklama */}
         <div>
           <label className="block text-gray-700 mb-1">Açıqlama</label>
@@ -266,10 +342,11 @@ const AddMehsul = () => {
             required
           />
         </div>
-
         {/* terkibi */}
         <div>
-          <label className="block text-gray-700 mb-1">Tərkibi(Istəyə bağlı)</label>
+          <label className="block text-gray-700 mb-1">
+            Tərkibi(Istəyə bağlı)
+          </label>
           <textarea
             name="terkibi"
             value={formData.terkibi}
@@ -279,7 +356,6 @@ const AddMehsul = () => {
             className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
           ></textarea>
         </div>
-
         {/* Kategori / Alt kategori */}
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -322,7 +398,6 @@ const AddMehsul = () => {
             </select>
           </div>
         </div>
-
         {/* miqdar/ceki */}
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -355,21 +430,8 @@ const AddMehsul = () => {
             </select>
           </div>
         </div>
-
         {/* Fiyat / Stok */}
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 mb-1">Qiymət (AZN)</label>
-            <input
-              type="number"
-              name="qiymet"
-              value={formData.qiymet}
-              onChange={handleChange}
-              placeholder="Qiyməti yazın"
-              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
-              required
-            />
-          </div>
           <div>
             <label className="block text-gray-700 mb-1">
               Endirimli qiymət (AZN)
@@ -383,6 +445,19 @@ const AddMehsul = () => {
               className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
             />
           </div>
+          <div>
+            <label className="block text-gray-700 mb-1">Qiymət (AZN)</label>
+            <input
+              type="number"
+              name="qiymet"
+              value={formData.qiymet}
+              onChange={handleChange}
+              placeholder="Qiyməti yazın"
+              className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
+              required
+            />
+          </div>
+
           <div>
             <label className="block text-gray-700 mb-1">Depo</label>
             <input
@@ -419,8 +494,168 @@ const AddMehsul = () => {
             />
           </div>
         </div>
-
         {/* brand */}
+
+        {/* Çatdırılma Seçimləri */}
+        <div className="mt-6 p-5 bg-white rounded-xl border border-gray-200 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Çatdırılma Seçimi
+          </h3>
+
+          {/* Seçim Düymələri */}
+          <div className="flex gap-4 mb-6">
+            <button
+              type="button"
+              onClick={() => setDeliveryType("SELF")}
+              className={`flex-1 py-3 px-4 rounded-lg font-medium border transition-all cursor-pointer ${
+                deliveryType === "SELF"
+                  ? "bg-green-600 border-green-600 text-white shadow-md"
+                  : "bg-gray-50 border-gray-300 text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              Özüm çatdırıram
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDeliveryType("YANGO")}
+              className={`flex-1 py-3 px-4 rounded-lg font-medium border transition-all cursor-pointer ${
+                deliveryType === "YANGO"
+                  ? "bg-green-600 border-green-600 text-white shadow-md"
+                  : "bg-gray-50 border-gray-300 text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              Yango Delivery
+            </button>
+          </div>
+
+          {/* Özüm Çatdırıram Seçildikdə Çıxan Sahələr */}
+          {deliveryType === "SELF" && (
+            <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200 animate-fadeIn">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Çatdırılma haqqı (AZN)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Məs: 3.50"
+                  className="w-full p-2.5 bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 transition-all duration-300 outline-none"
+                  value={selfDeliveryFee}
+                  onChange={(e) => setSelfDeliveryFee(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hansı halda çatdırılma pulsuzdur?
+                </label>
+                <div className="flex gap-2 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setFreeThresholdType("price")}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+                      freeThresholdType === "price"
+                        ? "bg-green-100 border-green-500 text-green-700"
+                        : "bg-white border-gray-300 text-gray-500"
+                    }`}
+                  >
+                    Məbləğə görə
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFreeThresholdType("count")}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+                      freeThresholdType === "count"
+                        ? "bg-green-100 border-green-500 text-green-700"
+                        : "bg-white border-gray-300 text-gray-500"
+                    }`}
+                  >
+                    Sayına görə
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFreeThresholdType("yoxdur")}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+                      freeThresholdType === "yoxdur"
+                        ? "bg-green-100 border-green-500 text-green-700"
+                        : "bg-white border-gray-300 text-gray-500"
+                    }`}
+                  >
+                    Yoxdur
+                  </button>
+                </div>
+                {freeThresholdType !== "yoxdur" && (
+                  <div>
+                    <input
+                      type="number"
+                      placeholder={
+                        freeThresholdType === "price"
+                          ? "Min. məbləğ (AZN)"
+                          : "Min. məhsul sayı"
+                      }
+                      className="w-full p-2.5 bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 transition-all duration-300 outline-none"
+                      value={freeThresholdValue}
+                      onChange={(e) => setFreeThresholdValue(e.target.value)}
+                    />
+                    <p className="mt-2 text-[11px] text-gray-500 italic">
+                      * Alıcı {freeThresholdValue || "..."}{" "}
+                      {freeThresholdType === "price" ? "AZN-dən" : "ədəddən"}{" "}
+                      yuxarı sifariş verdikdə çatdırılma pulsuz olacaq.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Yango Seçildikdə Çıxan Mesaj */}
+          {deliveryType === "YANGO" && (
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-300 w-full">
+              <label className="block text-gray-700 font-bold mb-2">
+                Məhsulun satılacağı filialları seçin:
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {user?.market?.address?.map((addr) => {
+                  const isChecked = formData.secilmisfiliallar.some(
+                    (b) => b.id === addr._id
+                  );
+                  return (
+                    <div
+                      key={addr._id}
+                      onClick={() => handleBranchSelect(addr)}
+                      className={`flex col-span-2 items-start max-h-md p-3 border rounded-md cursor-pointer transition-all ${
+                        isChecked
+                          ? "border-indigo-600 bg-indigo-50"
+                          : "border-gray-300 bg-white"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        readOnly
+                        className="mt-1 h-4 w-4 text-indigo-600 cursor-pointer"
+                      />
+                      <div className="ml-3">
+                        <p className="text-sm font-semibold text-gray-800">
+                          {addr.ad}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {addr.address.fullAddress}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {formData.secilmisfiliallar.length === 0 && (
+                <p className="text-xs text-orange-600 mt-2">
+                  ! Ən azı bir filial seçməlisiniz.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Resim yükleme */}
         <div className="flex flex-col gap-3">
@@ -497,51 +732,6 @@ const AddMehsul = () => {
             </>
           )}
         </div>
-
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-300">
-          <label className="block text-gray-700 font-bold mb-2">
-            Məhsulun satılacağı filialları seçin:
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {user?.market?.address?.map((addr) => {
-              const isChecked = formData.secilmisfiliallar.some(
-                (b) => b.id === addr._id
-              );
-              return (
-                <div
-                  key={addr._id}
-                  onClick={() => handleBranchSelect(addr)}
-                  className={`flex col-span-2 items-start max-h-md p-3 border rounded-md cursor-pointer transition-all ${
-                    isChecked
-                      ? "border-indigo-600 bg-indigo-50"
-                      : "border-gray-300 bg-white"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    readOnly
-                    className="mt-1 h-4 w-4 text-indigo-600 cursor-pointer"
-                  />
-                  <div className="ml-3">
-                    <p className="text-sm font-semibold text-gray-800">
-                      {addr.ad}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {addr.address.fullAddress}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {formData.secilmisfiliallar.length === 0 && (
-            <p className="text-xs text-orange-600 mt-2">
-              ! Ən azı bir filial seçməlisiniz.
-            </p>
-          )}
-        </div>
-
         {/* Submit */}
         <button
           type="submit"

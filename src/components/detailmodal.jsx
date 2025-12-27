@@ -77,7 +77,14 @@ const Detailmodal = ({ mehsul, onClose }) => {
           </span>{" "}
           <span className="text-lg font-medium text-gray-700">
             Tərkib: {mehsul.terkibi}
+          </span>{" "}
+          <span className="text-lg font-medium text-gray-700">
+            Çatdırılma: {mehsul.deliveryoptions?.deliverytype}
           </span>
+          <span className="text-lg font-medium text-gray-700">
+            Çatdırılma qiyməti: {mehsul.deliveryoptions?.selfdeliveryfee}
+          </span>{" "}
+          
         </div>
         <div className="grid grid-cols-2">
           {mehsul.filiallar.map((filial) => (
