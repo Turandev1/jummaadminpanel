@@ -245,7 +245,7 @@ const Mehsullarr = () => {
           <Loader2 className="animate-spin text-indigo-500 w-6 h-6" />
         ) : (
           <label
-            htmlFor={`toggle-${mehsul._id}`}
+            htmlFor={`tukendi-${mehsul._id}`}
             className="flex flex-col items-center cursor-pointer"
           >
             <p
@@ -289,7 +289,7 @@ const Mehsullarr = () => {
           <Loader2 className="animate-spin text-indigo-500 w-6 h-6" />
         ) : (
           <label
-            htmlFor={`toggle-${mehsul._id}`}
+            htmlFor={`status-${mehsul._id}`}
             className="flex items-center cursor-pointer"
           >
             <div className="relative">
