@@ -19,26 +19,12 @@ const EditModal = ({ product, onClose }) => {
   const [sending, setSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deliveryType, setDeliveryType] = useState(
-    product.deliveryoptions.deliveryType || "SELF"
+  const [deliveryType, setDeliveryType] = useState("SELF"); // 'SELF' və ya 'YANGO'
+  const [isCustomDelivery, setIsCustomDelivery] = useState(
+    product?.deliveryoptions?.iscustomdelivery || false
   );
-  const [selfDeliveryFee, setSelfDeliveryFee] = useState(
-    product.deliveryoptions.selfDeliveryFee || ""
-  );
-  const initialThresholdType =
-    product.deliveryoptions.freedeliverythresholdamount > 0
-      ? "price"
-      : product.deliveryoptions.freedeliverythresholdcount > 0
-      ? "count"
-      : "yoxdur";
-  const [freeThresholdType, setFreeThresholdType] =
-    useState(initialThresholdType);
-  const initialThresholdValue =
-    product.deliveryoptions.freedeliverythresholdamount ||
-    product.deliveryoptions.freedeliverythresholdcount ||
-    "";
-  const [freeThresholdValue, setFreeThresholdValue] = useState(
-    initialThresholdValue
+  const [customFee, setCustomFee] = useState(
+    product?.deliveryoptions?.customfee || 0
   );
   const { user } = useAuth();
   const [selectedBranches, setSelectedBranches] = useState(
@@ -195,8 +181,6 @@ const EditModal = ({ product, onClose }) => {
     setUploading(true);
     setSending(false);
 
-    const deliveryFeeNum = parseFloat(selfDeliveryFee);
-    const thresholdValueNum = parseFloat(freeThresholdValue);
     const priceNum = parseFloat(formData.qiymet);
     const discountPriceNum = parseFloat(formData.endirimliqiymet);
 
@@ -227,27 +211,11 @@ const EditModal = ({ product, onClose }) => {
         return;
 
       // 4. SELF (Özüm çatdırıram) - Qiymət yoxlaması
-      case deliveryType === "SELF" && (!selfDeliveryFee || deliveryFeeNum < 0):
-        toast.error(
-          "Özüm çatdırıram seçdikdə çatdırılma haqqı (AZN) daxil edilməlidir!"
-        );
-        setUploading(false);
+      // Validasiya blokunda bunları saxlayın:
+      case isCustomDelivery && (!customFee || parseFloat(customFee) < 0):
+        toast.error("Xüsusi çatdırılma seçildikdə qiymət daxil edilməlidir!");
         setIsSaving(false);
         return;
-
-      // 5. SELF - Pulsuz limit (Threshold) yoxlaması
-      case deliveryType === "SELF" &&
-        freeThresholdType !== "yoxdur" &&
-        (!freeThresholdValue || thresholdValueNum <= 0): {
-        const thresholdMsg =
-          freeThresholdType === "price"
-            ? "Zəhmət olmasa pulsuz çatdırılma üçün minimum məbləği daxil edin!"
-            : "Zəhmət olmasa pulsuz çatdırılma üçün minimum məhsul sayını daxil edin!";
-        toast.error(thresholdMsg);
-        setUploading(false);
-        setIsSaving(false);
-        return;
-      }
 
       // 6. Ümumi Filial yoxlaması (Hər ehtimala qarşı)
 
@@ -299,17 +267,11 @@ const EditModal = ({ product, onClose }) => {
       filiallar: selectedBranches,
       terkibi: formData.terkibi,
       depo: formData.depo,
-      deliveryType, // Yeni state
-      selfDeliveryFee:
-        deliveryType === "SELF" ? parseFloat(selfDeliveryFee) || 0 : 0,
-      freedeliverythresholdamount:
-        deliveryType === "SELF" && freeThresholdType === "price"
-          ? parseInt(freeThresholdValue) || 0
-          : 0,
-      freedeliverythresholdcount:
-        deliveryType === "SELF" && freeThresholdType === "count"
-          ? parseInt(freeThresholdValue) || 0
-          : 0,
+      deliveryoptions: {
+        deliveryType,
+        iscustomdelivery: isCustomDelivery,
+        customfee: isCustomDelivery ? parseFloat(customFee) : 0,
+      },
     };
 
     // 5) Backend'ə göndərin
@@ -565,7 +527,7 @@ const EditModal = ({ product, onClose }) => {
             </label>
 
             {/* deliveryoptions */}
-            <div className="mt-6 p-5 bg-white rounded-xl border border-gray-200 shadow-sm block col-span-2">
+            <div className="mt-6 p-5 w-full bg-white rounded-xl border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Çatdırılma Seçimi
               </h3>
@@ -599,82 +561,49 @@ const EditModal = ({ product, onClose }) => {
 
               {/* Özüm Çatdırıram Seçildikdə Çıxan Sahələr */}
               {deliveryType === "SELF" && (
-                <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200 animate-fadeIn">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Çatdırılma haqqı (AZN)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      placeholder="Məs: 3.50"
-                      className="w-full p-2.5 bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 transition-all duration-300 outline-none"
-                      value={selfDeliveryFee}
-                      onChange={(e) => setSelfDeliveryFee(e.target.value)}
-                    />
+                <div className="mt-6 p-5 bg-white rounded-xl border border-gray-200 shadow-sm block col-span-2">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    Çatdırılma Ayarları
+                  </h3>
+
+                  <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
+                    <div className="flex-1">
+                      <p className="text-sm text-blue-800 font-medium">
+                        Standart Çatdırılma:{" "}
+                        <span className="font-bold">
+                          Mağaza profilindəki qaydalar tətbiq olunacaq.
+                        </span>
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Hansı halda çatdırılma pulsuzdur?
+                  <div className="space-y-4">
+                    <label className="flex items-center gap-2 cursor-pointer p-3 bg-gray-50 rounded-lg border border-gray-300">
+                      <input
+                        type="checkbox"
+                        checked={isCustomDelivery}
+                        onChange={(e) => setIsCustomDelivery(e.target.checked)}
+                        className="w-5 h-5 text-indigo-600"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        Bu məhsul üçün xüsusi çatdırılma qiyməti təyin et (Məs:
+                        Çox ağır məhsullar üçün)
+                      </span>
                     </label>
-                    <div className="flex gap-2 mb-3">
-                      <button
-                        type="button"
-                        onClick={() => setFreeThresholdType("price")}
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
-                          freeThresholdType === "price"
-                            ? "bg-green-100 border-green-500 text-green-700"
-                            : "bg-white border-gray-300 text-gray-500"
-                        }`}
-                      >
-                        Məbləğə görə
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFreeThresholdType("count")}
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
-                          freeThresholdType === "count"
-                            ? "bg-green-100 border-green-500 text-green-700"
-                            : "bg-white border-gray-300 text-gray-500"
-                        }`}
-                      >
-                        Sayına görə
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFreeThresholdType("yoxdur")}
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
-                          freeThresholdType === "yoxdur"
-                            ? "bg-green-100 border-green-500 text-green-700"
-                            : "bg-white border-gray-300 text-gray-500"
-                        }`}
-                      >
-                        Yoxdur
-                      </button>
-                    </div>
-                    {freeThresholdType !== "yoxdur" && (
-                      <div>
+
+                    {isCustomDelivery && (
+                      <div className="animate-fadeIn">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Xüsusi çatdırılma haqqı (AZN)
+                        </label>
                         <input
                           type="number"
-                          placeholder={
-                            freeThresholdType === "price"
-                              ? "Min. məbləğ (AZN)"
-                              : "Min. məhsul sayı"
-                          }
-                          className="w-full p-2.5 bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 transition-all duration-300 outline-none"
-                          value={freeThresholdValue}
-                          onChange={(e) =>
-                            setFreeThresholdValue(e.target.value)
-                          }
+                          step="0.01"
+                          className="w-full p-2.5 bg-white border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-indigo-500"
+                          value={customFee}
+                          onChange={(e) => setCustomFee(e.target.value)}
+                          placeholder="Məs: 10.00"
                         />
-                        <p className="mt-2 text-[11px] text-gray-500 italic">
-                          * Alıcı {freeThresholdValue || "..."}{" "}
-                          {freeThresholdType === "price"
-                            ? "AZN-dən"
-                            : "ədəddən"}{" "}
-                          yuxarı sifariş verdikdə çatdırılma pulsuz olacaq.
-                        </p>
                       </div>
                     )}
                   </div>
@@ -728,7 +657,6 @@ const EditModal = ({ product, onClose }) => {
                 </div>
               )}
             </div>
-
             {/* --- GELİŞTİRİLMİŞ MEVCUT ŞEKİLLERİ GÖRÜNTÜLEME --- */}
             {allExistingPhotos.length > 0 && (
               <div className="col-span-2">

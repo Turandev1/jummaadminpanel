@@ -6,9 +6,9 @@
 
 //
 
-// export const API_BASE_URL = "http://localhost:5000";
+export const API_BASE_URL = "http://localhost:5000";
 
-export const API_BASE_URL = "https://jummabackendapi.onrender.com";
+// export const API_BASE_URL = "https://jummabackendapi.onrender.com";
 
 export const API_URLS = {
   IMAM: {
@@ -78,5 +78,7 @@ export const API_URLS = {
     DELETEANADDRESS: `${API_BASE_URL}/webapi/satici/deleteanaddress`,
     CHANGEEXISTINGADDRESS: `${API_BASE_URL}/webapi/satici/changeexistingaddress`,
     ADDNEWADDRESS: `${API_BASE_URL}/webapi/satici/addnewaddress`,
+    SETPRODUCTTUKENDI: `${API_BASE_URL}/webapi/satici/setproducttukendi`,
+    CHANGEDELIVERYOPTIONS: `${API_BASE_URL}/webapi/satici/changedeliveryoptions`,
   },
 };
