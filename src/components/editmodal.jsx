@@ -609,7 +609,6 @@ const EditModal = ({ product, onClose }) => {
                   </div>
                 </div>
               )}
-
               {/* Yango Seçildikdə Çıxan Mesaj */}
               {deliveryType === "YANGO" && (
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-300 w-full">
