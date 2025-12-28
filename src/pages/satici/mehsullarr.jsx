@@ -258,7 +258,7 @@ const Mehsullarr = () => {
             <div className="relative">
               <input
                 type="checkbox"
-                id={`toggle-${mehsul._id}`}
+                id={`tukendi-${mehsul._id}`}
                 checked={mehsul.mehsultukendi}
                 onChange={() => toggletukendi(mehsul._id)}
                 className="sr-only"
@@ -295,7 +295,7 @@ const Mehsullarr = () => {
             <div className="relative">
               <input
                 type="checkbox"
-                id={`toggle-${mehsul._id}`}
+                id={`tukendi-${mehsul._id}`}
                 checked={mehsul.isActive}
                 onChange={() => handletogglestatus(mehsul._id)}
                 className="sr-only"
