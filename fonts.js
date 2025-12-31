@@ -8,4 +8,5 @@ export const fonts = {
   arimabold: "arima-bold",
   interbolditalic: "inter-bold-italic",
   interlightitalic: "inter-light-italic",
+  poppinslight:'poppins-light'
 };

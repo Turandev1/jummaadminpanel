@@ -44,3 +44,8 @@
   font-family: "arima-bold";
   src: url("./assets/fonts/Arima-Bold.ttf") format("truetype");
 }
+
+@font-face {
+  font-family: "poppins-light";
+  src: url("./assets/fonts/Poppins-Light.ttf") format("truetype");
+}

@@ -52,6 +52,7 @@ export const API_URLS = {
     WARNSATICI: `${API_BASE_URL}/webapi/admin/warnsatici`,
     GETSATİCİPRODUCTS: `${API_BASE_URL}/webapi/admin/getsaticiproducts`,
     TOGGLEPRODUCTSTATUS: `${API_BASE_URL}/webapi/admin/toggleproductstatus`,
+    TOGGLEMURACIETREAD: `${API_BASE_URL}/webapi/admin/toggleread`,
     TOGGLEBLOCKPRODUCT: `${API_BASE_URL}/webapi/admin/toggleblockproduct`,
   },
   SATICI: {
