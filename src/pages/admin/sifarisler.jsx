@@ -42,6 +42,7 @@ const Sifarisleradmin = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* SOL – DETAY */}
+      
       <div className="flex-1 p-6 overflow-y-auto bg-white">
         {!selectedOrder ? (
           <div>Sifariş seçilmədi</div>
@@ -129,7 +130,7 @@ const Sifarisleradmin = () => {
                 label="Məhsulların cəmi qiyməti"
                 value={`${selectedOrder.pricing.subtotal} ₼`}
               />
-              <Info label="Karqo" value={`${selectedOrder.shipping.fee} ₼`} />
+              <Info label="Karqo" value={`${selectedOrder.pricing?.deliveryFee} ₼`} />
               <Info
                 label="Endirim"
                 value={`${selectedOrder.pricing.discount} ₼`}

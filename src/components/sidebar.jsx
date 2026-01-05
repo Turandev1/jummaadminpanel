@@ -22,9 +22,12 @@ import {
   MessageCircleCode,
   MessageCirclePlus,
   MessagesSquare,
+  LucidePackagePlus,
 } from "lucide-react";
+import { PiMosqueLight } from "react-icons/pi";
 
 const Sidebar = () => {
+
   const location = useLocation();
   const { role } = useAuth();
 
@@ -34,7 +37,7 @@ const Sidebar = () => {
       { to: "/admin", label: "Admin panel", icon: LayoutDashboard },
       { to: "/admin/iane", label: "Ianə", icon: HeartHandshake },
       { to: "/admin/qeydiyyat", label: "Qeydiyyat", icon: UserPlus },
-      { to: "/admin/mescids", label: "Mescidlər", icon: Building2 },
+      { to: "/admin/mescids", label: "Mescidlər", icon:PiMosqueLight  },
       { to: "/admin/ianeqoy", label: "Iane qoy", icon: PlusCircle },
       {
         to: "/admin/istifadecimesajlari",
@@ -51,7 +54,7 @@ const Sidebar = () => {
     ],
     satici: [
       { to: "/satici", label: "Profil", icon: User },
-      { to: "/satici/addproduct", label: "Məhsul əlavə et", icon: PackagePlus },
+      { to: "/satici/addproduct", label: "Məhsul əlavə et", icon: LucidePackagePlus },
       { to: "/satici/products", label: "Məhsullar", icon: Package },
       { to: "/satici/orders", label: "Sifarişlər", icon: ShoppingBag },
     ],
@@ -81,8 +84,8 @@ const Sidebar = () => {
               className={clsx(
                 "flex items-center gap-3 p-3 rounded-lg duration-200 group",
                 isActive
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-                  : "hover:bg-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-blue-500 text-white shadow-lg shadow-blue-900/20"
+                  : "hover:bg-blue-800 text-gray-400 hover:text-white"
               )}
             >
               <Icon
@@ -91,7 +94,7 @@ const Sidebar = () => {
                   "duration-200",
                   isActive
                     ? "text-white"
-                    : "text-gray-500 group-hover:text-blue-400"
+                    : "text-gray-400 group-hover:text-gray-100"
                 )}
               />
               <span className="text-[17px]">{item.label}</span>

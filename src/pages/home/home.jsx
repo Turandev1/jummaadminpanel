@@ -25,6 +25,7 @@ import {
 import { useDispatch } from "react-redux";
 import { setauthdata } from "../../redux/store";
 import api from "../../utils/axiosclient";
+import { requestForToken } from "../../../firebase";
 
 const SaticiRegister = ({ setView }) => {
   const [showpassword, setshowpassword] = useState(false);
@@ -1586,11 +1587,17 @@ const AdminLogin = () => {
     e.preventDefault();
     console.log("Admin login fonksiyonu çalıştı");
 
+    const fcmToken = await requestForToken();
+    console.log("fcmToken", fcmToken);
     try {
       setLoading(true);
-      const res = await axios.post(API_URLS.ADMIN.ADMINLOGIN, form, {
-        withCredentials: true,
-      });
+      const res = await axios.post(
+        API_URLS.ADMIN.ADMINLOGIN,
+        { email: form.email, password: form.password, fcmToken },
+        {
+          withCredentials: true,
+        }
+      );
       const data = res.data;
       console.log("user:", data.user);
       console.log("data:", data);

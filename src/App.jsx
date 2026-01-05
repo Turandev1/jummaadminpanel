@@ -8,10 +8,23 @@ import { useEffect } from "react";
 import useAuth from "./redux/authredux";
 import { useDispatch } from "react-redux";
 import { initAuth } from "./utils/authservice";
+import { onMessageListener, requestForToken } from "../firebase";
 
 function App() {
   const { logout } = useAuth();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Səhifə yüklənəndə tokeni istəyirik
+    requestForToken();
+
+    // Sayt açıq olanda bildiriş gəlsə:
+    onMessageListener()
+      .then((payload) => {
+        alert(`${payload.notification.title}: ${payload.notification.body}`);
+      })
+      .catch((err) => console.log("Xəta: ", err));
+  }, []);
 
   useEffect(() => {
     const kontrolet = async () => {
