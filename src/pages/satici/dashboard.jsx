@@ -680,14 +680,13 @@ const Dashboard = () => {
 
             <div className="flex flex-col col-span-2 lg:col-span-1">
               <label className="text-sm h-10 text-gray-600 mb-1">
-                Marketin açıqlaması,Market açıqlaması satıcı olaraq fəalliyyətin
-                davamı üçün mütləqdir
+                Market haqqında.Bu hissə marketdə istifadəçilərə göstəriləcək
               </label>
               <textarea
                 rows={4}
                 type="text"
                 name="aciqlama"
-                placeholder="Bizə özünüzdən və satıcı fəaliyyətinizdən danışın,Bu hissə istifadəçilərə göstərilmir"
+                placeholder="Özünüz və fəalliyyətiniz haqda istifadəçiləri bilgiləndirin"
                 value={formData.aciqlama}
                 onChange={handleInput}
                 className="border rounded-md px-3 py-2"
@@ -696,12 +695,13 @@ const Dashboard = () => {
 
             <div className="flex flex-col col-span-2 lg:col-span-1">
               <label className="text-sm h-10 text-gray-600 mb-1">
-                Market haqqında.Bu hissə marketdə istifadəçilərə göstəriləcək
+                Marketin açıqlaması,Market açıqlaması satıcı olaraq fəalliyyətin
+                davamı üçün mütləqdir
               </label>
               <textarea
                 name="haqqinda"
                 rows="4"
-                placeholder="İstifadəçilərə özünüz və satdığınız mallar haqqında məlumat verin."
+                placeholder="Bizə özünüz və fəalliyyətiniz haqda məlumat verin. Bu hissə istifadəçilərə göstərilmir"
                 value={formData.haqqinda}
                 onChange={handleInput}
                 className="border rounded-md px-3 py-2 resize-none"
