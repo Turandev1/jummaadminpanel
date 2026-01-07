@@ -1,5 +1,3 @@
-// src/utils/axiosClient.js
-
 import axios from "axios";
 import store, { logout, setauthdata } from "../redux/store";
 import { refreshAccessToken } from "./authservice";
@@ -10,46 +8,92 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Request Interceptor: Her istekte Authorization başlığını ekle
+// Request Interceptor
 api.interceptors.request.use((config) => {
   const token = store.getState().auth.accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Response Interceptor: 401 hatasını yakala ve token yenile
+// --- YENİ MƏNTİQ BAŞLAYIR ---
+let isRefreshing = false;
+let failedQueue = [];
+
+// Gözləyən sorğuları növbəyə salmaq və sonra icra etmək üçün funksiya
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
+// Response Interceptor
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    const original = error.config;
-    // Hata 401 ise ve daha önce tekrar denenmemişse
-    if (error.response?.status === 401 && !original._retry) {
-      original._retry = true;
+    const originalRequest = error.config;
 
-      const newAccess = await refreshAccessToken();
-
-      if (!newAccess) {
-        // Token yenilenemezse, oturumu kapat ve hatayı reddet
-        store.dispatch(logout());
-        return Promise.reject(error);
+    // Əgər xəta 401-dirsə və bu sorğu hələ təkrar olunmayıbsa
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      
+      // Əgər hazırda başqa bir sorğu tokeni yeniləyirsə, bu sorğunu növbəyə atırıq
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({
+            resolve: (token) => {
+              originalRequest.headers.Authorization = "Bearer " + token;
+              resolve(api(originalRequest));
+            },
+            reject: (err) => {
+              reject(err);
+            },
+          });
+        });
       }
 
-      // Sadece accessToken'ı güncelle, mevcut kullanıcı (user) ve rolü (role) koru
-      store.dispatch(
-        setauthdata({
-          ...store.getState().auth,
-          accessToken: newAccess,
-        })
-      );
+      originalRequest._retry = true;
+      isRefreshing = true;
 
-      // Orijinal isteğin Authorization başlığını yeni token ile güncelle
-      original.headers.Authorization = `Bearer ${newAccess}`;
+      try {
+        // Tokeni yeniləyirik
+        const newAccess = await refreshAccessToken();
 
-      // İsteği yeni token ile tekrarla
-      return api(original);
+        if (!newAccess) {
+          // Token yenilənmədi -> Logout
+          processQueue(new Error("Token yenilənmədi"), null);
+          store.dispatch(logout());
+          return Promise.reject(error);
+        }
+
+        // Uğurlu oldu -> Redux-u yenilə
+        store.dispatch(
+          setauthdata({
+            ...store.getState().auth,
+            accessToken: newAccess,
+          })
+        );
+
+        // Növbədə gözləyən digər sorğuları buraxırıq (yeni tokenlə)
+        processQueue(null, newAccess);
+
+        // İndiki sorğunu təkrar göndəririk
+        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+        return api(originalRequest);
+
+      } catch (err) {
+        processQueue(err, null);
+        store.dispatch(logout());
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false; // Proses bitdi
+      }
     }
 
-    // Diğer hataları veya tekrar denenen istekleri reddet
     return Promise.reject(error);
   }
 );

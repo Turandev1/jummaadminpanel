@@ -9,10 +9,12 @@ import useAuth from "./redux/authredux";
 import { useDispatch } from "react-redux";
 import { initAuth } from "./utils/authservice";
 import { onMessageListener, requestForToken } from "../firebase";
+import { useState } from "react";
 
 function App() {
   const { logout } = useAuth();
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Səhifə yüklənəndə tokeni istəyirik
@@ -28,11 +30,33 @@ function App() {
 
   useEffect(() => {
     const kontrolet = async () => {
-      const ok = await initAuth();
-      if (!ok) dispatch(logout());
+      try {
+        const ok = await initAuth();
+        if (!ok) {
+          // initAuth onsuz da logout edir, amma hər ehtimala qarşı:
+          dispatch(logout());
+        }
+      } catch (error) {
+        console.error("Auth check failed", error);
+        dispatch(logout());
+      } finally {
+        // İstər uğurlu olsun, istər xəta -> Yüklənməni bitir
+        setIsLoading(false);
+      }
     };
     kontrolet();
-  }, []); // Bağımlılık dizisi boş olduğu için sadece mount edildiğinde çalışır
+  }, [dispatch]);
+
+  // Əgər yoxlama hələ bitməyibsə, ekranı göstərmə (və ya Loading spinner qoy)
+  if (isLoading) {
+    return (
+      <div
+        style={{ display: "flex", justifyContent: "center", marginTop: "50px" }}
+      >
+        Yüklənir...
+      </div>
+    );
+  }
 
   return (
     <>
