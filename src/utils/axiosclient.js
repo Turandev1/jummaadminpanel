@@ -1,25 +1,35 @@
 import axios from "axios";
-import store, { logout, setauthdata } from "../redux/store";
-import { refreshAccessToken } from "./authservice";
+import store from "../redux/store"; // Redux store-u import et
+import { logout, setauthdata } from "../redux/store"; // Action-ları import et
 import { API_BASE_URL } from "./api";
 
+
+// 1. Axios instansiyası yaradiriq
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true,
+  withCredentials: true, // Cookie-ləri göndərmək üçün mütləqdir
 });
 
-// Request Interceptor
-api.interceptors.request.use((config) => {
-  const token = store.getState().auth.accessToken;
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+// 2. Request Interceptor: Hər sorğuya Access Tokeni əlavə edir
+api.interceptors.request.use(
+  (config) => {
+    const state = store.getState().auth;
+    const token = state.accessToken;
 
-// --- YENİ MƏNTİQ BAŞLAYIR ---
+    // Əgər token varsa və header-də yoxdursa, əlavə et
+    if (token && !config.headers["Authorization"]) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Dəyişənlər: Refresh prosesini idarə etmək üçün
 let isRefreshing = false;
 let failedQueue = [];
 
-// Gözləyən sorğuları növbəyə salmaq və sonra icra etmək üçün funksiya
+// Gözləyən sorğuları növbəyə yığan funksiya
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -28,25 +38,23 @@ const processQueue = (error, token = null) => {
       prom.resolve(token);
     }
   });
-
   failedQueue = [];
 };
 
-// Response Interceptor
+// 3. Response Interceptor: 401 xətalarını tutur
 api.interceptors.response.use(
-  (res) => res,
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Əgər xəta 401-dirsə və bu sorğu hələ təkrar olunmayıbsa
+    // Əgər xəta 401-dirsə və bu sorğu hələ retry olunmayıbsa
     if (error.response?.status === 401 && !originalRequest._retry) {
-      
-      // Əgər hazırda başqa bir sorğu tokeni yeniləyirsə, bu sorğunu növbəyə atırıq
+      // Əgər artıq refresh prosesi gedirsə, bu sorğununun cavabını növbəyə at
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({
             resolve: (token) => {
-              originalRequest.headers.Authorization = "Bearer " + token;
+              originalRequest.headers["Authorization"] = "Bearer " + token;
               resolve(api(originalRequest));
             },
             reject: (err) => {
@@ -60,37 +68,38 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Tokeni yeniləyirik
-        const newAccess = await refreshAccessToken();
+        // Redux-dan rolu götürək
+        const state = store.getState().auth;
+        const role = state.role;
 
-        if (!newAccess) {
-          // Token yenilənmədi -> Logout
-          processQueue(new Error("Token yenilənmədi"), null);
-          store.dispatch(logout());
-          return Promise.reject(error);
-        }
+        if (!role) throw new Error("Rol tapılmadı");
 
-        // Uğurlu oldu -> Redux-u yenilə
-        store.dispatch(
-          setauthdata({
-            ...store.getState().auth,
-            accessToken: newAccess,
-          })
+        // Refresh token endpointinə sorğu atırıq
+        // Cookie avtomatik gedəcək (withCredentials: true)
+        const response = await axios.post(
+          `${API_BASE_URL}/webapi/${role}/refreshToken`,
+          {},
+          { withCredentials: true }
         );
 
-        // Növbədə gözləyən digər sorğuları buraxırıq (yeni tokenlə)
-        processQueue(null, newAccess);
+        const { accessToken, user } = response.data;
 
-        // İndiki sorğunu təkrar göndəririk
-        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+        // Yeni məlumatları Redux-a yazırıq
+        store.dispatch(setauthdata({ accessToken, user, role }));
+
+        // Queue-da gözləyən digər sorğuları azad edirik
+        processQueue(null, accessToken);
+
+        // Uğursuz olan original sorğunu yeni tokenlə yenidən göndəririk
+        originalRequest.headers["Authorization"] = "Bearer " + accessToken;
         return api(originalRequest);
-
       } catch (err) {
+        // Refresh uğursuz oldusa, istifadəçini logout edirik
         processQueue(err, null);
         store.dispatch(logout());
         return Promise.reject(err);
       } finally {
-        isRefreshing = false; // Proses bitdi
+        isRefreshing = false;
       }
     }
 

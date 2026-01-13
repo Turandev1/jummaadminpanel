@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 import React, { useEffect, useRef, useState } from "react";
-import { Camera } from "lucide-react";
+import { BellIcon, Camera } from "lucide-react";
 import useAuth from "../../redux/authredux";
 import { useDispatch } from "react-redux";
 import { logout, setauthdata } from "../../redux/store";
@@ -9,6 +9,8 @@ import { API_URLS } from "../../utils/api";
 import api from "../../utils/axiosclient";
 import ChangePassword from "../../components/changepassword";
 import { AddressManager } from "../../components/addressmanager";
+import { CiDeliveryTruck } from "react-icons/ci";
+import { useNavigate } from "react-router-dom";
 
 // PhotoPicker.jsx
 
@@ -166,6 +168,7 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
 const UPLOAD_PRESET = "satici_profile_photos";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user, accessToken } = useAuth();
   const [editable, setEditable] = useState(false);
   // const [step, setStep] = useState(
@@ -174,6 +177,7 @@ const Dashboard = () => {
   // const [email, setEmail] = useState("");
   // const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
+  const [deliverycount, setdeliverycount] = useState(null);
   const dispatch = useDispatch();
   const [showpicker, setshowpicker] = useState(false);
   const [iseditable, setiseditable] = useState(false);
@@ -499,12 +503,25 @@ const Dashboard = () => {
     <div className="p-8 w-full bg-gray-100 min-h-screen">
       <div className="flex flex-row justify-between items-center px-2 my-4">
         <h1 className="text-2xl font-semibold">Profilim</h1>
-        <button
-          onClick={() => dispatch(logout())}
-          className="border text-xl px-4 py-1 cursor-pointer duration-300 rounded-full hover:bg-red-500 hover:border-red-500 hover:text-white"
-        >
-          Hesabdan çıx
-        </button>
+        <div className="items-center flex gap-x-3">
+          <button onClick={()=>navigate('/satici/orders')} className="rounded-full border bg-green-50 p-2 relative hover:bg-green-300 duration-300 transition-all cursor-pointer">
+            <CiDeliveryTruck size={24} color="green" />
+            {deliverycount > 0 && (
+              <div className="bg-red-500 rounded-full absolute -top-1 -right-1 px-2 text-white">
+                {deliverycount}
+              </div>
+            )}
+          </button>
+          {/* <button className="rounded-full border bg-gray-50 p-2">
+            <BellIcon size={24} color="green" />
+          </button> */}
+          <button
+            onClick={() => dispatch(logout())}
+            className="border text-xl px-4 py-1 cursor-pointer duration-300 rounded-full hover:bg-red-500 hover:border-red-500 hover:text-white"
+          >
+            Hesabdan çıx
+          </button>
+        </div>
       </div>
 
       {/* PROFIL KARTI */}

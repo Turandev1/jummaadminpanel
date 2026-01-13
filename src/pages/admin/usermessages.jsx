@@ -150,7 +150,6 @@ const Usermessages = () => {
             {messages.map((ticket) => {
               const isUnread = ticket.unreadCountForAdmin > 0;
               const isSelected = selectedTicket === ticket._id;
-              console.log("ticket", ticket);
               return (
                 <div
                   key={ticket._id}

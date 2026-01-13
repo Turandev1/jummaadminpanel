@@ -10,12 +10,15 @@ import { useDispatch } from "react-redux";
 import { initAuth } from "./utils/authservice";
 import { onMessageListener, requestForToken } from "../firebase";
 import { useState } from "react";
+import { X, Loader2 } from "lucide-react";
+import api from "./utils/axiosclient";
+import { setauthdata } from "./redux/store";
 
 function App() {
   const { logout } = useAuth();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
-
+  const { role } = useAuth();
   useEffect(() => {
     // Səhifə yüklənəndə tokeni istəyirik
     requestForToken();
@@ -29,31 +32,38 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const kontrolet = async () => {
+    const checkuser = async () => {
+      if (!role) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const ok = await initAuth();
-        if (!ok) {
-          // initAuth onsuz da logout edir, amma hər ehtimala qarşı:
-          dispatch(logout());
+        const res = await api.get(`/webapi/${role}/getme`);
+        if (res.data.succcess) {
+          dispatch(
+            setauthdata({
+              user: res.data.user,
+              role: "satici",
+            })
+          );
         }
       } catch (error) {
-        console.error("Auth check failed", error);
+        console.error(error);
         dispatch(logout());
       } finally {
-        // İstər uğurlu olsun, istər xəta -> Yüklənməni bitir
         setIsLoading(false);
       }
     };
-    kontrolet();
-  }, [dispatch]);
+    checkuser();
+  }, [dispatch, role]);
 
   // Əgər yoxlama hələ bitməyibsə, ekranı göstərmə (və ya Loading spinner qoy)
   if (isLoading) {
     return (
-      <div
-        style={{ display: "flex", justifyContent: "center", marginTop: "50px" }}
-      >
+      <div className="flex justify-center mt-20 gap-x-7">
         Yüklənir...
+        <Loader2 className="animate-spin text-green-600" />
       </div>
     );
   }

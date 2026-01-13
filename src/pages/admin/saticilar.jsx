@@ -62,7 +62,7 @@ export default function Saticilar() {
       setSaticilar(res.data.saticilar);
     } catch (err) {
       console.error(err);
-      setError("Satıcılar yüklenirken hata oluştu.");
+      setError("Satıcılar yüklənərkən xəta baş verdi.");
     } finally {
       setLoading(false);
     }

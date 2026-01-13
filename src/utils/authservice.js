@@ -50,7 +50,10 @@ export async function initAuth() {
     });
 
     // 2. Başarılıysa
-    if (res.data?.success) return true;
+    if (res.data?.success) {
+      console.log(res.data.role);
+      return true;
+    }
 
     // 3. Başarısız ama 401 değilse (sunucu hatası vb.)
     return false;
