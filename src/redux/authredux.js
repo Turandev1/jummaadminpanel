@@ -1,6 +1,6 @@
 // src/hooks/useAuth.js
 import { useSelector, useDispatch } from "react-redux";
-import { setauthdata, logout } from "./store";
+import { setauthdata, logoutUser } from "./store";
 
 const useAuth = () => {
   const { user, role, accessToken } = useSelector((state) => state.auth);
@@ -11,7 +11,7 @@ const useAuth = () => {
     role,
     accessToken,
     setAuthData: (data) => dispatch(setauthdata(data)),
-    logout: () => dispatch(logout()),
+    logout: () => dispatch(logoutUser()),
   };
 };
 

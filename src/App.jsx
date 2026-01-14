@@ -7,15 +7,13 @@ import { ToastContainer } from "react-toastify";
 import { useEffect } from "react";
 import useAuth from "./redux/authredux";
 import { useDispatch } from "react-redux";
-import { initAuth } from "./utils/authservice";
 import { onMessageListener, requestForToken } from "../firebase";
 import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import api from "./utils/axiosclient";
-import { setauthdata } from "./redux/store";
+import { logoutUser, setauthdata } from "./redux/store";
 
 function App() {
-  const { logout } = useAuth();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const { role } = useAuth();
@@ -50,7 +48,7 @@ function App() {
         }
       } catch (error) {
         console.error(error);
-        dispatch(logout());
+        dispatch(logoutUser());
       } finally {
         setIsLoading(false);
       }

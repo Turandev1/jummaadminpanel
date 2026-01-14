@@ -1,7 +1,7 @@
 // src/utils/authservice.js
 
 import axios from "axios";
-import store from "../redux/store";
+import store, { logoutUser } from "../redux/store";
 import { logout, setauthdata } from "../redux/store";
 import { API_BASE_URL } from "./api";
 
@@ -35,7 +35,7 @@ export async function refreshAccessToken() {
 export async function initAuth() {
   const state = store.getState().auth;
   const { accessToken, role } = state;
-
+  
   // Erişim belirteci veya rol bilgisi yoksa
   if (!accessToken || !role) return false;
 
@@ -67,7 +67,7 @@ export async function initAuth() {
     // 5. Token yenileme denemesi
     const newAccess = await refreshAccessToken();
     if (!newAccess) {
-      store.dispatch(logout()); // Yenileme başarısızsa logout
+      store.dispatch(logoutUser()); // Yenileme başarısızsa logout
       return false;
     }
 

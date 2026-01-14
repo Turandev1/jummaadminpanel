@@ -1,5 +1,5 @@
 import axios from "axios";
-import store from "../redux/store"; // Redux store-u import et
+import store, { logoutUser } from "../redux/store"; // Redux store-u import et
 import { logout, setauthdata } from "../redux/store"; // Action-ları import et
 import { API_BASE_URL } from "./api";
 
@@ -96,7 +96,7 @@ api.interceptors.response.use(
       } catch (err) {
         // Refresh uğursuz oldusa, istifadəçini logout edirik
         processQueue(err, null);
-        store.dispatch(logout());
+        store.dispatch(logoutUser());
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

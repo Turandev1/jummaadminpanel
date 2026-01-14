@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { BellIcon, Camera } from "lucide-react";
 import useAuth from "../../redux/authredux";
 import { useDispatch } from "react-redux";
-import { logout, setauthdata } from "../../redux/store";
+import { logout, logoutUser, setauthdata } from "../../redux/store";
 import axios from "axios";
 import { API_URLS } from "../../utils/api";
 import api from "../../utils/axiosclient";
@@ -498,6 +498,7 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="p-8 w-full bg-gray-100 min-h-screen">
@@ -516,7 +517,7 @@ const Dashboard = () => {
             <BellIcon size={24} color="green" />
           </button> */}
           <button
-            onClick={() => dispatch(logout())}
+            onClick={() => dispatch(logoutUser())}
             className="border text-xl px-4 py-1 cursor-pointer duration-300 rounded-full hover:bg-red-500 hover:border-red-500 hover:text-white"
           >
             Hesabdan çıx
@@ -949,7 +950,7 @@ const Dashboard = () => {
               </div>
             )}
             <button
-              onClick={() => dispatch(logout())}
+              onClick={() => dispatch(logoutUser())}
               className="border text-xl px-4 py-1 mt-4 cursor-pointer duration-300 rounded-full hover:bg-red-500 hover:border-red-500 hover:text-white"
             >
               Hesabdan çıx

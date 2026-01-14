@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import useAuth from "../../redux/authredux";
 import { API_URLS } from "../../utils/api";
 import { useDispatch } from "react-redux";
-import { logout, setauthdata } from "../../redux/store";
+import {  logoutUser, setauthdata } from "../../redux/store";
 import api from "../../utils/axiosclient";
 
 const Adminpage = () => {
@@ -105,7 +105,7 @@ const Adminpage = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">👑 Admin Paneli</h1>
           <button
-            onClick={() => dispatch(logout())}
+            onClick={() => dispatch(logoutUser())}
             className="px-4 py-2 bg-red-500 text-white rounded-lg cursor-pointer hover:bg-red-600 transition"
           >
             Çıxış et
