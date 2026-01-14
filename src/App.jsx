@@ -11,7 +11,7 @@ import { onMessageListener, requestForToken } from "../firebase";
 import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import api from "./utils/axiosclient";
-import { logoutUser, setauthdata } from "./redux/store";
+import {  setauthdata } from "./redux/store";
 
 function App() {
   const dispatch = useDispatch();
@@ -48,7 +48,6 @@ function App() {
         }
       } catch (error) {
         console.error(error);
-        dispatch(logoutUser());
       } finally {
         setIsLoading(false);
       }

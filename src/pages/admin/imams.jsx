@@ -7,7 +7,13 @@ import api from "../../utils/axiosclient";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
-
+import {
+  Mail,
+  LockKeyhole,
+  Loader2,
+  KeyRound,
+  CheckCircle,
+} from "lucide-react";
 import { MobileTimePicker } from "@mui/x-date-pickers/MobileTimePicker";
 
 const Imams = () => {
@@ -15,15 +21,19 @@ const Imams = () => {
   const [editData, setEditData] = useState({});
   const [mescids, setmescids] = useState([]);
   const { accessToken } = useAuth();
+  const [loading, setloading] = useState(false);
 
   useEffect(() => {
     const fetchmescidler = async () => {
+      setloading(true);
       try {
         const res = await api.get(API_URLS.ADMIN.GETMESCIDS, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         setmescids(res.data?.mescids);
+        setloading(false);
       } catch (error) {
+        setloading(false);
         console.error(error);
       }
     };
@@ -97,6 +107,15 @@ const Imams = () => {
       console.error("Güncelleme hatası:", err);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 justify-center items-center gap-x-2">
+        <p>Yüklənir . . .</p>
+        <Loader2 className="animate-spin text-green-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-3xl mx-auto my-10">
