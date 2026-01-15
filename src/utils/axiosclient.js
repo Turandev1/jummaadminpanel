@@ -1,6 +1,6 @@
 import axios from "axios";
 import store, { logoutUser } from "../redux/store"; // Redux store-u import et
-import { logout, setauthdata } from "../redux/store"; // Action-ları import et
+import {  setauthdata } from "../redux/store"; // Action-ları import et
 import { API_BASE_URL } from "./api";
 
 

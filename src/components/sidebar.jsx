@@ -24,10 +24,10 @@ import {
   MessagesSquare,
   LucidePackagePlus,
 } from "lucide-react";
-import { PiMosqueLight } from "react-icons/pi";
+import { PiMosqueLight, PiNotificationBold } from "react-icons/pi";
+import { IoIosSend } from "react-icons/io";
 
 const Sidebar = () => {
-
   const location = useLocation();
   const { role } = useAuth();
 
@@ -37,7 +37,7 @@ const Sidebar = () => {
       { to: "/admin", label: "Admin panel", icon: LayoutDashboard },
       { to: "/admin/iane", label: "Ianə", icon: HeartHandshake },
       { to: "/admin/qeydiyyat", label: "Qeydiyyat", icon: UserPlus },
-      { to: "/admin/mescids", label: "Mescidlər", icon:PiMosqueLight  },
+      { to: "/admin/mescids", label: "Mescidlər", icon: PiMosqueLight },
       { to: "/admin/ianeqoy", label: "Iane qoy", icon: PlusCircle },
       {
         to: "/admin/istifadecimesajlari",
@@ -46,6 +46,11 @@ const Sidebar = () => {
       },
       { to: "/admin/sellers", label: "Satıcılar", icon: Users },
       { to: "/admin/orders", label: "Sifarişlər", icon: ShoppingBag },
+      {
+        to: "/admin/sendnotifications",
+        label: "Bildiriş göndər",
+        icon: IoIosSend,
+      },
       { to: "/admin/dailycounter", label: "Sayaç", icon: Hash },
     ],
     imam: [
@@ -54,7 +59,11 @@ const Sidebar = () => {
     ],
     satici: [
       { to: "/satici", label: "Profil", icon: User },
-      { to: "/satici/addproduct", label: "Məhsul əlavə et", icon: LucidePackagePlus },
+      {
+        to: "/satici/addproduct",
+        label: "Məhsul əlavə et",
+        icon: LucidePackagePlus,
+      },
       { to: "/satici/products", label: "Məhsullar", icon: Package },
       { to: "/satici/orders", label: "Sifarişlər", icon: ShoppingBag },
     ],

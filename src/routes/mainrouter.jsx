@@ -31,6 +31,7 @@ import Usermessages from "../pages/admin/usermessages";
 import Resetpass from "../pages/home/resetpass";
 import Saticilar from "../pages/admin/saticilar";
 import Sifarisleradmin from "../pages/admin/sifarisler";
+import Sendnotifications from "../pages/admin/sendnotifications";
 
 const DashboardLayout = () => {
   return (
@@ -79,6 +80,7 @@ export const AdminRoutes = () => (
       <Route path="dailycounter" element={<DailyCounter />} />
       <Route path="sellers" element={<Saticilar />} />
       <Route path="orders" element={<Sifarisleradmin />} />
+      <Route path="sendnotifications" element={<Sendnotifications />} />
       {/* admin alt sayfalar */}
     </Route>
   </Routes>
