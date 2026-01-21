@@ -105,7 +105,7 @@ const Mehsullarr = () => {
     settogglingtukendiid(id);
     try {
       const res = await api.patch(
-        API_URLS.SATICI.SETPRODUCTTUKENDI,
+        API_URLS.SATICI.TOGGLEPRODUCTTUKENDI,
         { id },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );

@@ -81,7 +81,7 @@ export const API_URLS = {
     DELETEANADDRESS: `${API_BASE_URL}/webapi/satici/deleteanaddress`,
     CHANGEEXISTINGADDRESS: `${API_BASE_URL}/webapi/satici/changeexistingaddress`,
     ADDNEWADDRESS: `${API_BASE_URL}/webapi/satici/addnewaddress`,
-    SETPRODUCTTUKENDI: `${API_BASE_URL}/webapi/satici/setproducttukendi`,
+    TOGGLEPRODUCTTUKENDI: `${API_BASE_URL}/webapi/satici/toggleproducttukendi`,
     CHANGEDELIVERYOPTIONS: `${API_BASE_URL}/webapi/satici/changedeliveryoptions`,
   },
 };

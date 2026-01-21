@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { PiMosqueLight, PiNotificationBold } from "react-icons/pi";
 import { IoIosSend } from "react-icons/io";
+import { GiArabicDoor } from "react-icons/gi";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -38,6 +39,7 @@ const Sidebar = () => {
       { to: "/admin/iane", label: "Ianə", icon: HeartHandshake },
       { to: "/admin/qeydiyyat", label: "Qeydiyyat", icon: UserPlus },
       { to: "/admin/mescids", label: "Mescidlər", icon: PiMosqueLight },
+      { to: "/admin/namazgahlar", label: "Namazgahlar", icon: GiArabicDoor },
       { to: "/admin/ianeqoy", label: "Iane qoy", icon: PlusCircle },
       {
         to: "/admin/istifadecimesajlari",

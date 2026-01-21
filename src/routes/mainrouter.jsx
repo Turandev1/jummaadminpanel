@@ -32,6 +32,7 @@ import Resetpass from "../pages/home/resetpass";
 import Saticilar from "../pages/admin/saticilar";
 import Sifarisleradmin from "../pages/admin/sifarisler";
 import Sendnotifications from "../pages/admin/sendnotifications";
+import Namazgahlar from "../pages/admin/namazgahlar";
 
 const DashboardLayout = () => {
   return (
@@ -81,6 +82,7 @@ export const AdminRoutes = () => (
       <Route path="sellers" element={<Saticilar />} />
       <Route path="orders" element={<Sifarisleradmin />} />
       <Route path="sendnotifications" element={<Sendnotifications />} />
+      <Route path="namazgahlar" element={<Namazgahlar />} />
       {/* admin alt sayfalar */}
     </Route>
   </Routes>

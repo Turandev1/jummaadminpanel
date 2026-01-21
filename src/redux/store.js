@@ -75,6 +75,7 @@ const authslice = createSlice({
       localStorage.removeItem("accessToken");
     },
   },
+  
 });
 
 export const { setauthdata, logout, clearAuthData } = authslice.actions;
