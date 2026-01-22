@@ -16,6 +16,8 @@ import {
   FaTimes,
   FaLocationArrow,
   FaSearch,
+  FaTrash,
+  FaTrashAlt,
 } from "react-icons/fa";
 import L from "leaflet";
 import axios from "axios"; // Nominatim axtarışı üçün lazımdır
@@ -26,6 +28,7 @@ import { ADMIN_URL } from "../../utils/api";
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 import { toast } from "react-toastify";
+import { MdOutlineCancel } from "react-icons/md";
 
 let DefaultIcon = L.icon({
   iconUrl: icon,
@@ -57,6 +60,7 @@ const Namazgahlar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [deletemode, setdeletemode] = useState(false);
   const [newPlace, setNewPlace] = useState({
     name: "",
     city: "",
@@ -68,18 +72,18 @@ const Namazgahlar = () => {
     note: "",
   });
 
+  const fetchnamazgahlar = async () => {
+    try {
+      const res = await api.get(`${ADMIN_URL}/getnamazgahlar`);
+      if (res.data.success) {
+        setPlaces(res.data.places);
+      }
+    } catch (error) {
+      console.error("Məlumat gətirilərkən xəta:", error);
+    }
+  };
   // --- Məlumatları Gətir ---
   useEffect(() => {
-    const fetchnamazgahlar = async () => {
-      try {
-        const res = await api.get(`${ADMIN_URL}/getnamazgahlar`);
-        if (res.data.success) {
-          setPlaces(res.data.places);
-        }
-      } catch (error) {
-        console.error("Məlumat gətirilərkən xəta:", error);
-      }
-    };
     fetchnamazgahlar();
   }, []);
 
@@ -175,6 +179,7 @@ const Namazgahlar = () => {
     }
 
     try {
+      console.log("newPlace", newPlace);
       // 2. Backend Sorğusu (Nümunə)
       const res = await api.post(
         `${ADMIN_URL}/createmosqueorprayplace`,
@@ -226,6 +231,23 @@ const Namazgahlar = () => {
     }
   };
 
+  const handledeleteplace = async (placeid) => {
+    try {
+      console.log("placeid", placeid);
+      const res = await api.post(`${ADMIN_URL}/deleteprayplace`, { placeid });
+
+      if (res.data.success) {
+        toast.success("Ugurla silindi");
+      }
+      setSelectedPlace(null);
+      fetchnamazgahlar();
+      setdeletemode(null);
+    } catch (error) {
+      console.error(error);
+      toast.error("Xəta bas verdi");
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden font-sans">
       {/* --- SOL PANEL: Detallar --- */}
@@ -242,24 +264,33 @@ const Namazgahlar = () => {
                   <>
                     <button
                       onClick={handleUpdatePlace}
-                      className="btn-primary bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center gap-2"
+                      className="btn-primary cursor-pointer bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center gap-2"
                     >
                       <FaSave /> Yadda Saxla
                     </button>
                     <button
                       onClick={() => setIsEditMode(false)}
-                      className="btn-secondary bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded flex items-center gap-2"
+                      className="btn-secondary cursor-pointer bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded flex items-center gap-2"
                     >
                       <FaTimes /> Ləğv et
                     </button>
                   </>
                 ) : (
-                  <button
-                    onClick={() => setIsEditMode(true)}
-                    className="btn-primary bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-2"
-                  >
-                    <FaEdit /> Redaktə Et
-                  </button>
+                  <div className="flex flex-row gap-x-3">
+                    <button
+                      onClick={() => setIsEditMode(true)}
+                      className="btn-primary cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-2"
+                    >
+                      <FaEdit /> Redaktə Et
+                    </button>
+
+                    <button
+                      onClick={() => setdeletemode(selectedPlace._id)}
+                      className="btn-primary cursor-pointer bg-red-500 hover:bg-red-700 duration-200 transition-all text-white px-4 py-2 rounded flex items-center gap-2"
+                    >
+                      <FaTrash color="white" /> Məkanı sil
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -335,7 +366,7 @@ const Namazgahlar = () => {
           <h2 className="font-bold text-lg">Məkanlar</h2>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 shadow-lg transition transform hover:scale-110"
+            className="bg-blue-600 cursor-pointer text-white p-3 rounded-full hover:bg-blue-700 shadow-lg transition transform hover:scale-110"
           >
             <FaPlus />
           </button>
@@ -387,7 +418,7 @@ const Namazgahlar = () => {
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-red-500 transition"
+                className="text-gray-400 cursor-pointer hover:text-red-500 transition"
               >
                 <FaTimes size={24} />
               </button>
@@ -575,7 +606,7 @@ const Namazgahlar = () => {
                 {/* Cari Mövqe Düyməsi */}
                 <button
                   onClick={handleGetCurrentLocation}
-                  className="absolute bottom-6 right-6 z-[1000] bg-white p-3 rounded-full shadow-lg text-blue-600 hover:bg-gray-100 transition"
+                  className="absolute cursor-pointer bottom-6 right-6 z-[1000] bg-white p-3 rounded-full shadow-lg text-blue-600 hover:bg-gray-100 transition"
                   title="Cari Mövqe"
                 >
                   <FaLocationArrow size={20} />
@@ -587,15 +618,39 @@ const Namazgahlar = () => {
             <div className="p-4 bg-gray-50 border-t flex justify-end gap-3">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-5 py-2 rounded text-gray-600 font-medium hover:bg-gray-200 transition"
+                className="px-5 py-2 cursor-pointer rounded text-gray-600 font-medium hover:bg-gray-200 transition"
               >
                 Ləğv et
               </button>
               <button
                 onClick={handleAddPlace}
-                className="px-5 py-2 rounded bg-blue-600 text-white font-bold hover:bg-blue-700 shadow transition"
+                className="px-5 py-2 cursor-pointer rounded bg-blue-600 text-white font-bold hover:bg-blue-700 shadow transition"
               >
                 Təsdiqlə
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deletemode && (
+        <div className="fixed flex items-center justify-center inset-0 z-50 p-12 w-full h-full bg-black/50 backdrop-blur-sm">
+          <div className="bg-white w-2/3 h-2/3 rounded-2xl flex flex-col items-center justify-center gap-y-4">
+            <h2>Silmək istədiyinizdən əminsinizmi?</h2>
+            <div className="flex flex-row gap-x-8">
+              <button
+                onClick={() => setdeletemode(null)}
+                className="flex flex-row items-center justify-center py-2 px-5 bg-green-600 text-white gap-x-2 rounded-3xl cursor-pointer"
+              >
+                <MdOutlineCancel color="white" size={24} />
+                Ləğv et
+              </button>
+              <button
+                onClick={() => handledeleteplace(deletemode)}
+                className="flex flex-row items-center justify-center py-2 px-7 bg-red-600 text-2xl text-white rounded-4xl cursor-pointer"
+              >
+                <FaTrashAlt color="white" size={24} />
+                Sil
               </button>
             </div>
           </div>
