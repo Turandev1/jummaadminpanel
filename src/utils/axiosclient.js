@@ -1,8 +1,7 @@
 import axios from "axios";
 import store, { logoutUser } from "../redux/store"; // Redux store-u import et
-import {  setauthdata } from "../redux/store"; // Action-ları import et
+import { setauthdata } from "../redux/store"; // Action-ları import et
 import { API_BASE_URL } from "./api";
-
 
 // 1. Axios instansiyası yaradiriq
 const api = axios.create({
@@ -46,7 +45,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
+    console.log("Interceptor isledi");
     // Əgər xəta 401-dirsə və bu sorğu hələ retry olunmayıbsa
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Əgər artıq refresh prosesi gedirsə, bu sorğununun cavabını növbəyə at
@@ -83,7 +82,7 @@ api.interceptors.response.use(
         );
 
         const { accessToken, user } = response.data;
-
+        console.log("accessToken", accessToken);
         // Yeni məlumatları Redux-a yazırıq
         store.dispatch(setauthdata({ accessToken, user, role }));
 
@@ -95,8 +94,9 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err) {
         // Refresh uğursuz oldusa, istifadəçini logout edirik
-        processQueue(err, null);
         store.dispatch(logoutUser());
+        processQueue(err, null);
+        console.log("interceptor ugursuz");
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

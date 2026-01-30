@@ -1,5 +1,9 @@
 // src/redux/store.js
-import { configureStore, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {
+  configureStore,
+  createAsyncThunk,
+  createSlice,
+} from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_BASE_URL } from "../utils/api";
 
@@ -9,34 +13,27 @@ const initialState = {
   accessToken: localStorage.getItem("accessToken") || null,
 };
 
-
-
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
-  async (_, { dispatch, rejectWithValue,getState }) => {
+  async (_, { dispatch, getState }) => {
+    const { auth } = getState();
     try {
-      const state=getState()
-      const role=state.auth.role
-      console.log('role',role)
-      // 1. Backend-ə logout sorğusu göndəririk
-      await axios.post(
-        `${API_BASE_URL}/webapi/${role}/adminpanellogout`,
-        {},
-        { withCredentials: true } // Cookie göndərmək üçün mütləqdir
-      );
-      
-      // 2. Uğurlu olsa, lokal təmizləməni işə salırıq
-      dispatch(logout()); 
-      return true;
-
+      if (auth.role && auth.user) {
+        const userId = auth.user.id || auth.user._id;
+        await axios.post(
+          `${API_BASE_URL}/webapi/${auth.role}/adminpanellogout`,
+          { userId }
+        );
+      }
     } catch (error) {
-      // API xəta versə belə (məs: internet yoxdur), istifadəçini localdan çıxarmalıyıq
+      console.error("Logout error:", error);
+    } finally {
+      // Nəticədən asılı olmayaraq lokal məlumatları silirik
       dispatch(logout());
-      return rejectWithValue(error.response?.data || "Xəta baş verdi");
+      // Lazım olsa yönləndirmə bura da qoyula bilər
     }
   }
 );
-
 
 const authslice = createSlice({
   name: "auth",
@@ -75,7 +72,6 @@ const authslice = createSlice({
       localStorage.removeItem("accessToken");
     },
   },
-  
 });
 
 export const { setauthdata, logout, clearAuthData } = authslice.actions;

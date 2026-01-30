@@ -950,7 +950,7 @@ const Dashboard = () => {
               </div>
             )}
             <button
-              onClick={() => dispatch(logoutUser())}
+              onClick={() => dispatch(logout())}
               className="border text-xl px-4 py-1 mt-4 cursor-pointer duration-300 rounded-full hover:bg-red-500 hover:border-red-500 hover:text-white"
             >
               Hesabdan çıx

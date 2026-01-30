@@ -11,11 +11,11 @@ import { onMessageListener, requestForToken } from "../firebase";
 import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import api from "./utils/axiosclient";
-import {  setauthdata } from "./redux/store";
+import { setauthdata } from "./redux/store";
 
 function App() {
   const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { role } = useAuth();
   useEffect(() => {
     // Səhifə yüklənəndə tokeni istəyirik
@@ -38,11 +38,11 @@ function App() {
 
       try {
         const res = await api.get(`/webapi/${role}/getme`);
-        if (res.data.succcess) {
+        if (res.data.success) {
           dispatch(
             setauthdata({
               user: res.data.user,
-              role: "satici",
+              role: res.data.role,
             })
           );
         }

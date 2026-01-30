@@ -65,6 +65,17 @@ const getStatusInfo = (status) => {
   }
 };
 
+const formatDateTime = (date) =>
+  new Date(date).toLocaleString("az-AZ", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+
 // Köməkçi Komponent: Qiymətləndirmə Sətiri
 const PricingRow = ({ label, value, isDiscount = false, color }) => (
   <div className="flex justify-between">
@@ -78,6 +89,221 @@ const PricingRow = ({ label, value, isDiscount = false, color }) => (
     </span>
   </div>
 );
+
+const DetailInfoBox = ({
+  title,
+  value,
+  valueClass = "text-gray-900",
+  Icon,
+}) => (
+  <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-start space-x-3">
+    <Icon className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-1" />
+    <div>
+      <span className="text-xs font-medium text-indigo-600 block uppercase tracking-wide">
+        {title}
+      </span>
+      <span
+        className={`text-base font-semibold ${valueClass} block break-words`}
+      >
+        {value}
+      </span>
+    </div>
+  </div>
+);
+
+const OrderDetailComponent = ({ order }) => {
+  const [currentStatus, setCurrentStatus] = useState(order.status);
+  const [loading, setLoading] = useState(false);
+  const statusInfo = getStatusInfo(order.status);
+  const StatusIcon = statusInfo.icon;
+
+  // Status seçimləri (Mongoose sxemindəki enum ilə eyni olmalıdır)
+  const statusOptions = [
+    { value: "pending", label: "Gözləmədə" },
+    { value: "processing", label: "Hazırlanır" },
+    { value: "packaged", label: "Paketləndi" },
+    { value: "on-delivery", label: "Kuryerdə" },
+    { value: "delivered", label: "Çatdırıldı" },
+    { value: "cancelled", label: "Ləğv edildi" },
+  ];
+
+  const handleStatusChange = async (newStatus) => {
+    setLoading(true);
+    try {
+      // Backend API-nizə uyğun olaraq yolu tənzimləyin
+      const response = await api.patch(API_URLS.SATICI.CHANGEORDERSTATUS, {
+        orderId: order._id,
+        status: newStatus,
+      });
+
+      if (response.ok) {
+        setCurrentStatus(newStatus);
+        alert("Status uğurla yeniləndi!");
+      } else {
+        alert("Xəta baş verdi.");
+      }
+    } catch (error) {
+      console.error("Update error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8 pb-10">
+      {/* BAŞLIQ VƏ STATUS */}
+      <div className="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500">
+        <div className="flex justify-between items-center mb-4 border-b pb-4">
+          <h1 className="text-xl font-extrabold text-gray-900">
+            Sifariş Detalları SifarişNo:
+            <span className="text-indigo-600">#{order.orderNo}</span>
+          </h1>
+          {/* STATUS DƏYİŞMƏ SELECT-İ */}
+          <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border">
+            <label className="text-xs font-bold text-gray-600 uppercase">
+              Statusu Yenilə:
+            </label>
+            <select
+              disabled={loading}
+              value={currentStatus}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5"
+            >
+              {statusOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {loading && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+            )}
+          </div>
+        </div>
+
+        {/* ƏSAS GÖSTƏRİCİLƏR (Kartlar) */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+          <DetailInfoBox
+            title="Cəmi Ödəniş"
+            value={`${order.pricing?.total?.toFixed(2)} ₼`}
+            Icon={DollarSignIcon}
+            valueClass="text-green-700 text-xl"
+          />
+          <DetailInfoBox
+            title="Məhsul Sayı"
+            value={order.items.length}
+            Icon={ShoppingBagIcon}
+          />
+          <DetailInfoBox
+            title="Ödəniş Metodu"
+            value={order.payment?.method.toUpperCase()}
+            Icon={CreditCardIcon}
+          />
+          <DetailInfoBox
+            title="Tarix"
+            value={formatDateTime(order.createdAt)}
+            Icon={ClockIcon}
+          />
+        </div>
+      </div>
+
+      {/* MÜŞTƏRİ VƏ ÇATDIRILMA MƏLUMATLARI */}
+      <div className="bg-white p-6 rounded-xl shadow-lg">
+        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
+          <UserIcon className="w-5 h-5 mr-2 text-indigo-500" /> Müştəri &
+          Çatdırılma
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <DetailInfoBox
+            title="Müştəri Adı"
+            value={order.customer.fullname}
+            Icon={UserIcon}
+          />
+          <DetailInfoBox
+            title="Telefon"
+            value={order.customer.phone}
+            Icon={UserIcon}
+          />
+          <div className="md:col-span-2">
+            <DetailInfoBox
+              title="Ünvan"
+              value={`${order.customer.address}`}
+              Icon={MapPinIcon}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* MƏHSULLARIN SİYAHISI (Yalnız Satıcının Məhsulları) */}
+      <div className="bg-white p-6 rounded-xl shadow-lg">
+        <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
+          <ShoppingBagIcon className="w-5 h-5 mr-2 text-indigo-500" /> Sizin
+          Məhsullarınız ({order.items.length})
+        </h2>
+        <ul className="divide-y divide-gray-100 border border-gray-200 rounded-lg">
+          {order.items.map((item, index) => (
+            <li
+              key={index}
+              className="p-4 flex justify-between items-center hover:bg-gray-50 transition duration-150"
+            >
+              <div className="flex items-center space-x-4">
+                <img
+                  src={item.secure_url || "/placeholder-image.svg"}
+                  alt={item.mehsuladi}
+                  className="w-12 h-12 object-cover rounded-lg border flex-shrink-0"
+                />
+                <div>
+                  <p className="text-base font-medium text-gray-900">
+                    {item.mehsuladi}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {item.marketname} | {item.qiymet.toFixed(2)} ₼ / ədəd
+                  </p>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-base font-bold text-indigo-600">
+                  {item.count} x
+                </p>
+                <p className="text-sm font-bold text-gray-800">
+                  {item.totalItemPrice.toFixed(2)} ₼
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* QİYMƏTLƏNDİRMƏ VƏ ÖDƏNİŞ DETALLARI */}
+      {/* Maliyyə & Ödəniş bölməsində PricingRow hissəsini belə yenilə: */}
+      <div className="space-y-2 max-w-sm ml-auto text-sm border-b pb-4 mb-4">
+        <PricingRow
+          label="Məhsul Cəmi (Subtotal)"
+          value={order.pricing.subtotal}
+          color="text-gray-700"
+        />
+        <PricingRow
+          label="Komissiya (Haqqımız)"
+          value={order.pricing.commission}
+          isDiscount={true}
+          color="text-red-500"
+        />
+        <PricingRow
+          label="Çatdırılma Haqqı"
+          value={order.pricing.deliveryFee}
+          color="text-gray-700"
+        />
+        <div className="flex justify-between font-bold border-t pt-3 mt-3 text-xl">
+          <span>Sizə Ödəniləcək:</span>
+          <span className="text-green-600">
+            {order.pricing.payout.toFixed(2)} ₼
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- ƏSAS KOMPONENT ---
 const Sifarisler = () => {
   const { user } = useAuth();
@@ -102,261 +328,6 @@ const Sifarisler = () => {
       hour12: false,
     });
 
-  const DetailInfoBox = ({
-    title,
-    value,
-    valueClass = "text-gray-900",
-    Icon,
-  }) => (
-    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-start space-x-3">
-      <Icon className="w-6 h-6 text-indigo-600 flex-shrink-0 mt-1" />
-      <div>
-        <span className="text-xs font-medium text-indigo-600 block uppercase tracking-wide">
-          {title}
-        </span>
-        <span
-          className={`text-base font-semibold ${valueClass} block break-words`}
-        >
-          {value}
-        </span>
-      </div>
-    </div>
-  );
-
-  const OrderDetailComponent = ({ order, saticiId }) => {
-    const [currentStatus, setCurrentStatus] = useState(order.orderStatus);
-    const [loading, setLoading] = useState(false);
-    const statusInfo = getStatusInfo(order.orderStatus);
-    const StatusIcon = statusInfo.icon;
-    const sellerItems = order.items.filter(
-      (item) => item.saticiID === saticiId
-    );
-
-    // Status seçimləri (Mongoose sxemindəki enum ilə eyni olmalıdır)
-    const statusOptions = [
-      { value: "pending", label: "Gözləmədə" },
-      { value: "processing", label: "Hazırlanır" },
-      { value: "packaged", label: "Paketləndi" },
-      { value: "on-delivery", label: "Kuryerdə" },
-      { value: "delivered", label: "Çatdırıldı" },
-      { value: "cancelled", label: "Ləğv edildi" },
-    ];
-
-    const handleStatusChange = async (newStatus) => {
-      setLoading(true);
-      try {
-        // Backend API-nizə uyğun olaraq yolu tənzimləyin
-        const response = await api.patch(API_URLS.SATICI.CHANGEORDERSTATUS, {
-          orderId: order._id,
-          status: newStatus,
-        });
-
-        if (response.ok) {
-          setCurrentStatus(newStatus);
-          alert("Status uğurla yeniləndi!");
-        } else {
-          alert("Xəta baş verdi.");
-        }
-      } catch (error) {
-        console.error("Update error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    return (
-      <div className="space-y-8 pb-10">
-        {/* BAŞLIQ VƏ STATUS */}
-        <div className="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-500">
-          <div className="flex justify-between items-center mb-4 border-b pb-4">
-            <h1 className="text-xl font-extrabold text-gray-900">
-              Sifariş Detalları SifarişNo:
-              <span className="text-indigo-600">#{order.orderNo}</span>
-            </h1>
-            {/* STATUS DƏYİŞMƏ SELECT-İ */}
-            <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border">
-              <label className="text-xs font-bold text-gray-600 uppercase">
-                Statusu Yenilə:
-              </label>
-              <select
-                disabled={loading}
-                value={currentStatus}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5"
-              >
-                {statusOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              {loading && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
-              )}
-            </div>
-          </div>
-
-          {/* ƏSAS GÖSTƏRİCİLƏR (Kartlar) */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-            <DetailInfoBox
-              title="Cəmi Ödəniş"
-              value={`${order.pricing.total.toFixed(2)} ₼`}
-              Icon={DollarSignIcon}
-              valueClass="text-green-700 text-xl"
-            />
-            <DetailInfoBox
-              title="Məhsul Sayı"
-              value={sellerItems.length}
-              Icon={ShoppingBagIcon}
-            />
-            <DetailInfoBox
-              title="Ödəniş Metodu"
-              value={order.payment.method.toUpperCase()}
-              Icon={CreditCardIcon}
-            />
-            <DetailInfoBox
-              title="Tarix"
-              value={formatDateTime(order.createdAt)}
-              Icon={ClockIcon}
-            />
-          </div>
-        </div>
-
-        {/* MÜŞTƏRİ VƏ ÇATDIRILMA MƏLUMATLARI */}
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
-            <UserIcon className="w-5 h-5 mr-2 text-indigo-500" /> Müştəri &
-            Çatdırılma
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailInfoBox
-              title="Müştəri Adı"
-              value={order.userfullname}
-              Icon={UserIcon}
-            />
-            <DetailInfoBox
-              title="Telefon"
-              value={order.userphone}
-              Icon={UserIcon}
-            />
-            <div className="md:col-span-2">
-              <DetailInfoBox
-                title="Ünvan"
-                value={`${order.catdirilma.fulladdress}, ${order.catdirilma.city}`}
-                Icon={MapPinIcon}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* MƏHSULLARIN SİYAHISI (Yalnız Satıcının Məhsulları) */}
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
-            <ShoppingBagIcon className="w-5 h-5 mr-2 text-indigo-500" /> Sizin
-            Məhsullarınız ({sellerItems.length})
-          </h2>
-          <ul className="divide-y divide-gray-100 border border-gray-200 rounded-lg">
-            {sellerItems.map((item, index) => (
-              <li
-                key={index}
-                className="p-4 flex justify-between items-center hover:bg-gray-50 transition duration-150"
-              >
-                <div className="flex items-center space-x-4">
-                  <img
-                    src={item.secure_url || "/placeholder-image.svg"}
-                    alt={item.mehsuladi}
-                    className="w-12 h-12 object-cover rounded-lg border flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-base font-medium text-gray-900">
-                      {item.mehsuladi}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {item.marketname} | {item.qiymet.toFixed(2)} ₼ / ədəd
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-base font-bold text-indigo-600">
-                    {item.count} x
-                  </p>
-                  <p className="text-sm font-bold text-gray-800">
-                    {item.totalItemPrice.toFixed(2)} ₼
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* QİYMƏTLƏNDİRMƏ VƏ ÖDƏNİŞ DETALLARI */}
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
-            <CreditCardIcon className="w-5 h-5 mr-2 text-indigo-500" /> Maliyyə
-            & Ödəniş
-          </h2>
-
-          {/* Qiymətləndirmə */}
-          <div className="space-y-2 max-w-sm ml-auto text-sm border-b pb-4 mb-4">
-            <PricingRow
-              label="Məhsulun Ümumi Qiyməti (Subtotal)"
-              value={order.pricing.subtotal}
-              color="text-gray-700"
-            />
-            <PricingRow
-              label="Kargo (Çatdırılma) Haqqı"
-              value={order.catdirilma?.fee}
-              color="text-gray-700"
-            />
-            <PricingRow
-              label="Endirim"
-              value={order.pricing.discount}
-              isDiscount={true}
-              color="text-red-500"
-            />
-            <div className="flex justify-between font-bold border-t pt-3 mt-3 text-xl">
-              <span>Cəmi Ödənilən Məbləğ</span>
-              <span className="text-indigo-600">
-                {order.pricing.total.toFixed(2)} ₼
-              </span>
-            </div>
-          </div>
-
-          {/* Epoint Detalları */}
-          {order.payment.status !== "pending" && (
-            <div className="pt-4 space-y-3 text-sm">
-              <p className="font-semibold text-gray-800 flex items-center">
-                <CheckCircleIcon className="w-4 h-4 mr-2 text-green-500" />{" "}
-                Ödəniş Statusu:{" "}
-                <span
-                  className={`ml-2 font-bold ${
-                    order.payment.status === "paid"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {order.payment.status.toUpperCase()}
-                </span>
-              </p>
-              <p>
-                <span className="font-medium text-gray-600">Kart Maskası:</span>{" "}
-                {order.payment.epoint.cardMask || "Yoxdur"}
-              </p>
-              <p>
-                <span className="font-medium text-gray-600">
-                  Tranzaksiya ID:
-                </span>{" "}
-                {order.payment.epoint.bankTransaction ||
-                  order.payment.epoint.transaction ||
-                  "Yoxdur"}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   useEffect(() => {
     const fetchOrders = async () => {
       if (!saticiId) return;
@@ -366,6 +337,7 @@ const Sifarisler = () => {
         setOrders(res.data.orders);
         if (res.data.orders.length > 0) {
           // İlk sifarişi avtomatik seç
+          console.log("orders", res.data.orders);
           setSelectedOrder(res.data.orders[0]);
         } else {
           setTimeout(() => {
@@ -416,7 +388,7 @@ const Sifarisler = () => {
           <div className="space-y-4">
             {orders.map((order) => {
               const isSelected = selectedOrder?._id === order._id;
-              const statusInfo = getStatusInfo(order.orderStatus);
+              const statusInfo = getStatusInfo(order.status);
 
               return (
                 <div
@@ -446,12 +418,12 @@ const Sifarisler = () => {
                     <p className="flex items-center">
                       <DollarSignIcon className="w-4 h-4 mr-1 text-indigo-500" />
                       <span className="font-bold text-lg text-indigo-700">
-                        {order.pricing.total.toFixed(2)} ₼
+                        {order.pricing?.payout?.toFixed(2)} ₼{" "}
                       </span>
                     </p>
                     <p className="flex items-center">
                       <UserIcon className="w-4 h-4 mr-1 text-gray-500" />
-                      {order.userfullname}
+                      {order.customer.fullname}
                     </p>
                     <p className="flex items-center">
                       <ClockIcon className="w-4 h-4 mr-1 text-gray-500" />
