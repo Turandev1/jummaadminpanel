@@ -22,7 +22,8 @@ export const logoutUser = createAsyncThunk(
         const userId = auth.user.id || auth.user._id;
         await axios.post(
           `${API_BASE_URL}/webapi/${auth.role}/adminpanellogout`,
-          { userId }
+          { userId },
+          { withCredentials: true }
         );
       }
     } catch (error) {

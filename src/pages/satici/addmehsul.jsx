@@ -144,6 +144,55 @@ const AddMehsul = () => {
       return null;
     }
   };
+
+  // Bu funksiyanı handleSubmit-dən yuxarıda və ya kənarda təyin edin
+  const parseKeyValueData = (text) => {
+    if (!text) return [];
+
+    const lines = text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const result = [];
+    let currentHeader = null;
+    let currentItems = [];
+
+    lines.forEach((line) => {
+      // 1. Başlığı tanımaq (Məs: "1. Serum:", "NƏTİCƏ" və ya "Serum:")
+      // Regex: Sətir rəqəmlə başlaya bilər, sonunda mütləq ":" var və ya tam böyük hərflərlədir
+      if (line.endsWith(":") || line === "NƏTİCƏ" || /^\d+\./.test(line)) {
+        // Əgər əvvəlki başlıq varsa, onu nəticəyə əlavə et
+        if (currentHeader) {
+          result.push({ header: currentHeader, items: currentItems });
+        }
+
+        // Yeni başlığı təmizlə (nömrəni və ":" işarəsini sil)
+        currentHeader = line
+          .replace(/^\d+\.\s*/, "") // "1. " hissəsini silir
+          .trim();
+
+        currentItems = [];
+      }
+      // 2. Elementləri tanımaq (Məs: "*", "✓" ilə başlayanlar)
+      else if (line.endsWith("*") || line.endsWith(";")) {
+        const cleanedItem = line.replace(/^[*✓]\s*/, "").trim();
+        currentItems.push(cleanedItem);
+      }
+      // 3. Əgər başlıq yoxdursa və sadə mətndirsə (Ehtiyat variant)
+      else if (currentHeader) {
+        currentItems.push(line);
+      }
+    });
+
+    // Sonuncu qrupu əlavə et
+    if (currentHeader) {
+      result.push({ header: currentHeader, items: currentItems });
+    }
+
+    return result;
+  };
+
+  // handleSubmit daxilində köhnə split kodlarını bunlarla əvəz edin:
   //
 
   // mehsul yaradir
@@ -208,13 +257,8 @@ const AddMehsul = () => {
         toast.error("Şəkillər yüklənmədi.");
         return;
       }
-      const formatteddescription = formData.description
-        .split(",")
-        .map((item) => item.trim())
-        .filter((item) => item.length > 0)
-        .map(
-          (item) => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()
-        );
+      const formatteddescription = parseKeyValueData(formData.description);
+      const formattedterkib = parseKeyValueData(formData.terkibi);
 
       // 2) Backend-ə məlumat göndərilir
       setSending(true);
@@ -243,7 +287,7 @@ const AddMehsul = () => {
         olcuvahidi: formData.olcuvahidi,
         miqdari: formData.miqdar,
         productphotos: validImages,
-        terkibi: formData.terkibi,
+        terkibi: formattedterkib,
         kutle: formData.kutle,
         isCustomDelivery,
         customFee,
@@ -307,7 +351,14 @@ const AddMehsul = () => {
         </div>
         {/* Açıklama */}
         <div>
-          <label className="block text-gray-700 mb-1">Açıqlama</label>
+          <span className="text-sm font-medium text-gray-700">
+            Açıqlama:
+            <span className="text-sm">
+              (Başlıqların sonuna iki nöqtə qoyun,Maddələri isə sonuna ulduz və
+              ya nöqtəli vergül qoyaraq ayırın.Məs:Nəticə: Tox saxlayır; Dərini
+              təmizləyir*)"
+            </span>
+          </span>{" "}
           <textarea
             name="description"
             value={formData.description}
@@ -320,14 +371,19 @@ const AddMehsul = () => {
         </div>
         {/* terkibi */}
         <div>
-          <label className="block text-gray-700 mb-1">
-            Tərkibi(Istəyə bağlı)
-          </label>
+          <span className="text-sm font-medium text-gray-700">
+            Tərkibi:
+            <span className="text-sm">
+              (Başlıqların sonuna iki nöqtə qoyun,Maddələri isə sonuna ulduz və
+              ya nöqtəli vergül qoyaraq ayırın.Məs:Nəticə: Tox saxlayır; Dərini
+              təmizləyir*)"
+            </span>
+          </span>
           <textarea
             name="terkibi"
             value={formData.terkibi}
             onChange={handleChange}
-            placeholder="Məhsulun tərkibini yazın.Baş hərflər avtomatik böyüdülür.Başlıqların sonuna 2 nöqtə qoyun və maddələri vergüllə ayırın."
+            placeholder="Məhsulun tərkibini yazın.Baş hərflər avtomatik böyüdülür. İstəyə bağlı"
             rows={3}
             className="w-full border border-gray-300 rounded-md p-2 outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-300"
           ></textarea>

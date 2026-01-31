@@ -1,7 +1,46 @@
 import { X } from "lucide-react";
 
+const formatToReadableString = (data) => {
+  if (!data) return "";
+
+  // 1. Əgər massivdirsə (Array)
+  if (Array.isArray(data)) {
+    if (data.length === 0) return "";
+
+    // İlk elementi yoxlayırıq ki, formatı müəyyən edək
+    const firstItem = data[0];
+
+    // HAL A: Yeni strukturlaşmış format [{header: "...", items: [...]}]
+    if (
+      typeof firstItem === "object" &&
+      firstItem !== null &&
+      firstItem.header
+    ) {
+      return data
+        .map((item) => `${item.header}  ${item.items?.join("\n ") || ""}`)
+        .join("\n ");
+    }
+
+    // HAL B: Köhnə string massivi formatı ["un", "şəkər", "su"]
+    if (typeof firstItem === "string") {
+      return data.join(", ");
+    }
+  }
+
+  // 2. HAL C: Əgər sadəcə bir string-dirsə "Məhsul haqqında mətn"
+  if (typeof data === "string") {
+    return data;
+  }
+
+  return "";
+};
+
 const Detailmodal = ({ mehsul, onClose }) => {
   if (!mehsul) return null;
+
+  const formattedAciqlama = formatToReadableString(mehsul.aciqlama);
+  const formattedterkib = formatToReadableString(mehsul.terkibi);
+
   const fixedcategories = (category) => {
     switch (category) {
       case "qida":
@@ -24,11 +63,10 @@ const Detailmodal = ({ mehsul, onClose }) => {
       <div className="bg-white rounded-xl overflow-y-auto shadow-2xl w-full max-w-[90%] h-full p-6 transform transition-all duration-300 scale-100">
         <div className="flex justify-between items-center border-b pb-1 mb-3">
           <h2 className="text-2xl font-bold text-gray-800">Məhsul Detalları</h2>
-          <button onClick={onClose}>
-            <X className="w-6 h-6 text-gray-500 cursor-pointer" />
+          <button onClick={onClose} className="bg-green-500 rounded-full p-2 cursor-pointer duration-200 hover:bg-green-700" >
+            <X className="w-6 h-6 text-white cursor-pointer" />
           </button>
         </div>
-
         <div className="w-full overflow-x-auto mb-6">
           <div className="flex space-x-2 py-2">
             {mehsul.productphotos.map((photo) => (
@@ -73,18 +111,17 @@ const Detailmodal = ({ mehsul, onClose }) => {
             Ölçü vahidi: {mehsul.olcuvahidi}
           </span>
           <span className="text-lg font-medium text-gray-700">
-            Açıqlama: {mehsul.aciqlama}
-          </span>{" "}
-          <span className="text-lg font-medium text-gray-700">
-            Tərkib: {mehsul.terkibi}
-          </span>{" "}
-          <span className="text-lg font-medium text-gray-700">
-            Çatdırılma: {mehsul.deliveryoptions?.deliverytype}
-          </span>
-          <span className="text-lg font-medium text-gray-700">
             Çatdırılma qiyməti: {mehsul.deliveryoptions?.selfdeliveryfee}
           </span>{" "}
-          
+          <span className="text-lg col-span-2 font-medium text-gray-700">
+            Çatdırılma: {mehsul.deliveryoptions?.deliverytype}
+          </span>
+          <span className="text-lg col-span-2 font-medium text-gray-700">
+            Açıqlama: {formattedAciqlama}
+          </span>{" "}
+          <span className="text-lg col-span-2 font-medium text-gray-700">
+            Tərkib: {formattedterkib}
+          </span>{" "}
         </div>
         <div className="grid grid-cols-2">
           {mehsul.filiallar.map((filial) => (

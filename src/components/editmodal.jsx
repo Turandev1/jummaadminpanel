@@ -10,6 +10,43 @@ import useAuth from "../redux/authredux";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
 const UPLOAD_PRESET = "product_photos";
 
+export const ProductInfoList = ({ data, title }) => {
+  if (!data || (Array.isArray(data) && data.length === 0)) return null;
+
+  return (
+    <div className="mt-4 border-t pt-2">
+      <h3 className="text-md font-bold text-indigo-800 mb-2 uppercase tracking-wide">
+        {title}
+      </h3>
+      <div className="space-y-3">
+        {Array.isArray(data) ? (
+          data.map((section, idx) => (
+            <div
+              key={idx}
+              className="bg-gray-50 p-2 rounded border border-gray-100"
+            >
+              {section.header && (
+                <h4 className="font-bold text-gray-800 text-sm mb-1">
+                  {section.header}:
+                </h4>
+              )}
+              <ul className="list-disc pl-5 space-y-1">
+                {section.items?.map((item, i) => (
+                  <li key={i} className="text-gray-600 text-xs leading-relaxed">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-600 text-sm">{data}</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const EditModal = ({ product, onClose }) => {
   const [modalImage, setModalImage] = useState(null);
   const [dragOver, setDragOver] = useState(false);
@@ -26,6 +63,7 @@ const EditModal = ({ product, onClose }) => {
   const [customFee, setCustomFee] = useState(
     product?.deliveryoptions?.customfee || 0
   );
+  console.log("product", product.terkibi);
   const { user } = useAuth();
   const [selectedBranches, setSelectedBranches] = useState(
     product.filiallar || []
@@ -41,27 +79,110 @@ const EditModal = ({ product, onClose }) => {
     (photo) => !removedImagePublicIds.includes(photo.public_id)
   );
 
+  // Obyekt massivini "Başlıq: item1, item2. " formatına çevirir
+  const formatToReadableString = (data) => {
+    if (!data) return "";
+
+    // 1. Əgər massivdirsə (Array)
+    if (Array.isArray(data)) {
+      if (data.length === 0) return "";
+
+      // İlk elementi yoxlayırıq ki, formatı müəyyən edək
+      const firstItem = data[0];
+
+      // HAL A: Yeni strukturlaşmış format [{header: "...", items: [...]}]
+      if (
+        typeof firstItem === "object" &&
+        firstItem !== null &&
+        firstItem.header
+      ) {
+        return data
+          .map((item) => `${item.header}  ${item.items?.join("\n ") || ""}`)
+          .join("\n ");
+      }
+
+      // HAL B: Köhnə string massivi formatı ["un", "şəkər", "su"]
+      if (typeof firstItem === "string") {
+        return data.join(", ");
+      }
+    }
+
+    // 2. HAL C: Əgər sadəcə bir string-dirsə "Məhsul haqqında mətn"
+    if (typeof data === "string") {
+      return data;
+    }
+
+    return "";
+  };
+
   const [formData, setFormData] = useState({
     mehsuladi: product.mehsuladi || "",
     kateqoriya: product.kateqoriya || "",
     altkateqoriya: product.altkateqoriya || "",
     qiymet: product.qiymet || 0,
-    terkibi: product.terkibi || "",
     endirimliqiymet: product.endirimliqiymet || 0,
     depo: product.depo || 0,
     brand: product.brand || "",
     miqdari: product.miqdari || "",
     olcuvahidi: product.olcuvahidi || "",
-    aciqlama:
-      (Array.isArray(product.aciqlama)
-        ? product.aciqlama.join(", ")
-        : product.aciqlama) || "",
+    terkibi: formatToReadableString(product.terkibi),
+    aciqlama: formatToReadableString(product.aciqlama),
     isActive: product.isActive || false,
     endirim: product.endirim || 0,
     barkod: product.barkod || "",
     sku: product.sku || "",
     tesvir: product.tesvir || "",
   });
+
+  // Yazını [{header, items}] formatına çevirir
+  const parseKeyValueData = (text) => {
+    if (!text) return [];
+
+    const lines = text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const result = [];
+    let currentHeader = null;
+    let currentItems = [];
+
+    lines.forEach((line) => {
+      // 1. Başlığı tanımaq (Məs: "1. Serum:", "NƏTİCƏ" və ya "Serum:")
+      // Regex: Sətir rəqəmlə başlaya bilər, sonunda mütləq ":" var və ya tam böyük hərflərlədir
+      if (line.endsWith(":") || line === "NƏTİCƏ" || /^\d+\./.test(line)) {
+        // Əgər əvvəlki başlıq varsa, onu nəticəyə əlavə et
+        if (currentHeader) {
+          result.push({ header: currentHeader, items: currentItems });
+        }
+
+        // Yeni başlığı təmizlə (nömrəni və ":" işarəsini sil)
+        currentHeader = line
+          .replace(/^\d+\.\s*/, "") // "1. " hissəsini silir
+          .trim();
+
+        currentItems = [];
+      }
+      // 2. Elementləri tanımaq (Məs: "*", "✓" ilə başlayanlar)
+      else if (
+        line.endsWith("*") ||
+        line.endsWith(";")
+      ) {
+        const cleanedItem = line.replace(/^[*✓]\s*/, "").trim();
+        currentItems.push(cleanedItem);
+      }
+      // 3. Əgər başlıq yoxdursa və sadə mətndirsə (Ehtiyat variant)
+      else if (currentHeader) {
+        currentItems.push(line);
+      }
+    });
+
+    // Sonuncu qrupu əlavə et
+    if (currentHeader) {
+      result.push({ header: currentHeader, items: currentItems });
+    }
+
+    return result;
+  };
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -240,14 +361,8 @@ const EditModal = ({ product, onClose }) => {
     // 2) Qorunmuş mövcud şəkilləri və yeni yüklənmiş şəkilləri birləşdirin
     const finalProductPhotos = [...keptExistingPhotos, ...validNewImages];
 
-    // 3) Açıqlamayı formatlayın
-    const formattedAciqlama = formData.aciqlama
-      .split(",")
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0)
-      .map(
-        (item) => item.charAt(0).toUpperCase() + item.slice(1).toLowerCase()
-      );
+    const formattedAciqlama = parseKeyValueData(formData.aciqlama);
+    const formattedterkib = parseKeyValueData(formData.terkibi);
 
     // 4) Payload hazırlayın
     const payload = {
@@ -265,7 +380,7 @@ const EditModal = ({ product, onClose }) => {
       removedphotos: removedImagePublicIds, // Silinməsi tələb olunan public ID-lər
       miqdari: formData.miqdari,
       filiallar: selectedBranches,
-      terkibi: formData.terkibi,
+      terkibi: formattedterkib,
       depo: formData.depo,
       deliveryoptions: {
         deliveryType,
@@ -358,27 +473,39 @@ const EditModal = ({ product, onClose }) => {
             {/* Açıqlama */}
             <label className="block col-span-2">
               <span className="text-sm font-medium text-gray-700">
-                Açıqlama
+                Açıqlama:
+                <span className="text-sm">
+                  (Başlıqların sonuna iki nöqtə qoyun,Maddələri isə sonuna ulduz
+                  və ya nöqtəli vergül qoyaraq ayırın.Məs:Nəticə: Tox saxlayır;
+                  Dərini təmizləyir*)"
+                </span>
               </span>
               <textarea
                 name="aciqlama"
                 value={formData.aciqlama}
                 onChange={handleChange}
                 placeholder="Məhsul haqqında açıqlama (vergüllə ayırın)"
-                className="mt-1 block w-full h-40 rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
+                className="mt-1 block w-full h-56 rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
                 rows={3}
                 required
               />
             </label>
 
             <label className="block col-span-2">
-              <span className="text-sm font-medium text-gray-700">Tərkibi</span>
+              <span className="text-sm font-medium text-gray-700">
+                Tərkibi:
+                <span className="text-sm">
+                  (Başlıqların sonuna iki nöqtə qoyun,Maddələri isə sonuna ulduz
+                  və ya nöqtəli vergül qoyaraq ayırın.Məs:Nəticə: Tox saxlayır;
+                  Dərini təmizləyir*)"
+                </span>
+              </span>
               <textarea
                 name="terkibi"
                 value={formData.terkibi}
                 onChange={handleChange}
-                placeholder="Məhsulun tərkibi (vergüllə ayırın)"
-                className="mt-1 block w-full h-40 rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
+                placeholder="Məhsulun tərkibi (Başlıqların sonuna iki nöqtə qoyun,Maddələri isə sonuna ulduz və ya nöqtəli vergül qoyaraq ayırın.Məs:Nəticə: Tox saxlayır; Dərini təmizləyir,)"
+                className="mt-1 block w-full h-56 rounded-lg border outline-none focus:ring-2 border-gray-400 p-2.5 bg-gray-50 focus:border-indigo-500 focus:ring-indigo-500 transition duration-150"
                 rows={3}
               />
             </label>
@@ -527,13 +654,13 @@ const EditModal = ({ product, onClose }) => {
             </label>
 
             {/* deliveryoptions */}
-            <div className="mt-6 p-5 w-full bg-white rounded-xl border border-gray-200 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            <div className="mt-6 p-5 w-full bg-white col-span-2 rounded-xl border border-gray-200 shadow-sm">
+              <h3 className="text-lg font-semibold grid-cols-2 text-gray-800 mb-4">
                 Çatdırılma Seçimi
               </h3>
 
               {/* Seçim Düymələri */}
-              <div className="flex gap-4 mb-6">
+              <div className="flex gap-4 mb-6 grid-cols-2">
                 <button
                   type="button"
                   onClick={() => setDeliveryType("SELF")}

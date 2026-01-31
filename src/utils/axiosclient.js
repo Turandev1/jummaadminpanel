@@ -80,8 +80,8 @@ api.interceptors.response.use(
           {},
           { withCredentials: true }
         );
-
         const { accessToken, user } = response.data;
+        console.log('data:')
         console.log("accessToken", accessToken);
         // Yeni məlumatları Redux-a yazırıq
         store.dispatch(setauthdata({ accessToken, user, role }));
