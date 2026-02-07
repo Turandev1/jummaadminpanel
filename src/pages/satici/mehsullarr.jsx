@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import api from "../../utils/axiosclient";
-import { API_URLS } from "../../utils/api";
+import { API_URLS, SATICI_URL } from "../../utils/api";
 import useAuth from "../../redux/authredux";
-import { Eye, InfoIcon, Loader2, Pencil, X } from "lucide-react";
+import {
+  Copy,
+  Eye,
+  InfoIcon,
+  Loader2,
+  Pencil,
+  Search,
+  User,
+  X,
+} from "lucide-react";
 import { toast } from "react-toastify";
 import Detailmodal from "../../components/detailmodal";
 import EditModal from "../../components/editmodal";
@@ -19,6 +28,11 @@ const Mehsullarr = () => {
   const [selfDeliveryFee, setSelfDeliveryFee] = useState("");
   const [freeThresholdType, setFreeThresholdType] = useState("yoxdur"); // 'price' və ya 'count'
   const [freeThresholdValue, setFreeThresholdValue] = useState("");
+  const [copymodal, setcopymodal] = useState(null);
+  const [searchterm, setsearchterm] = useState("");
+  const [foundsellers, setfoundsellers] = useState([]);
+  const [issearching, setissearching] = useState(false);
+  const [iscopying, setiscopying] = useState(false);
   // Function to fetch products
 
   const fetchProducts = useCallback(async () => {
@@ -223,8 +237,69 @@ const Mehsullarr = () => {
     }
   };
 
+  const searchsellers = async (query) => {
+    setsearchterm(query);
+
+    if (query.length < 2) {
+      setfoundsellers([]);
+      return;
+    }
+
+    setissearching(true);
+    try {
+      const res = await api.get(
+        `${SATICI_URL}/getsaticilar?query=${query}&saticiId=${user._id}`
+      );
+
+      if (res.data.success) {
+        setfoundsellers(res.data.saticilar);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setissearching(false);
+    }
+  };
+
+  const handlecopyproduct = async (targetsellerid) => {
+    if (!copymodal) {
+      return;
+    }
+
+    const confirmcopy = window.confirm(
+      "Bu məhsulu seçilən satıcıya kopyalamağı təsdiqləyirsinizmi"
+    );
+    if (!confirmcopy) return;
+
+    setiscopying(true);
+    try {
+      const res = await api.post(`${SATICI_URL}/copymehsul`, {
+        originalproductid: copymodal._id,
+        targetsellerid,
+      });
+
+      if (res.data.success) {
+        toast.success("Məhsul uğurla kopyalandı");
+        setcopymodal(null);
+        setsearchterm("");
+        setfoundsellers([]);
+      }
+    } catch (error) {
+      toast.error("Server xətası");
+      console.error(error);
+    } finally {
+      setiscopying(false);
+    }
+  };
+
+  const closeCopyModal = () => {
+    setcopymodal(null);
+    setsearchterm("");
+    setfoundsellers([]);
+  };
+
   const ProductRow = ({ mehsul, index }) => (
-    <div className="grid grid-cols-11 gap-4 items-center p-2 border-b border-gray-100 hover:bg-indigo-50 transition-colors duration-150">
+    <div className="grid grid-cols-11 gap-2 items-center p-2 border-b border-gray-100 hover:bg-indigo-50 transition-colors duration-150">
       {/* 2. Məhsul Adı (Name) - col-span-6 (Mobile: col-span-5) */}
       <div className="col-span-1 text-center font-bold text-gray-700">
         {index}.
@@ -284,7 +359,7 @@ const Mehsullarr = () => {
       </div>
 
       {/* 5. Status (Toggle) - col-span-2 */}
-      <div className="col-span-1 xl:col-span-2 flex justify-center">
+      <div className="col-span-1 flex justify-center borde">
         {togglingId === mehsul._id ? (
           <Loader2 className="animate-spin text-indigo-500 w-6 h-6" />
         ) : (
@@ -313,6 +388,17 @@ const Mehsullarr = () => {
             </div>
           </label>
         )}
+      </div>
+
+      <div className="col-span-1  flex justify-center borde w-full ml-auto">
+        {/* View Details Button (Uses custom notification panel) */}
+        <button
+          onClick={() => setcopymodal(mehsul)}
+          className="p-2 flex justify-center items-center text-gray-500 border cursor-pointer hover:text-blue-600 hover:bg-blue-100 rounded-full transition duration-150"
+          title="Detallara bax"
+        >
+          <Copy className="h-5 w-5" />
+        </button>
       </div>
 
       {/* 6. Action Buttons (View/Edit) - col-span-1 */}
@@ -360,7 +446,8 @@ const Mehsullarr = () => {
           <div className="col-span-2 text-center">Kateqoriya</div>
           <div className="col-span-1 text-center">Tükəndi</div>
           <div className="col-span-2 text-center">Qiymət</div>
-          <div className="col-span-1 xl:col-span-2 text-center">Status</div>
+          <div className="col-span-1  text-center">Status</div>
+          <div className="col-span-1  text-center">Kopyala</div>
           <div className="col-span-1 text-center">Hərəkətlər</div>
         </div>
 
@@ -391,7 +478,6 @@ const Mehsullarr = () => {
           </div>
         )}
       </div>
-
       {/* Edit Modal */}
       {editingProduct && (
         <EditModal
@@ -405,7 +491,6 @@ const Mehsullarr = () => {
           onClose={() => setdetailmodal(null)}
         />
       )}
-
       {catdirilmamodal && (
         <div className="fixed inset-0 bg-black/60 bg-opacity-75 backdrop-blur-sm flex items-center justify-center py-6">
           <div className="bg-white flex flex-col items-center rounded-xl overflow-y-auto shadow-2xl w-full max-w-[90%] h-full p-6 transform transition-all duration-300 scale-100">
@@ -505,6 +590,129 @@ const Mehsullarr = () => {
           </div>
         </div>
       )}
+      {/* Copy Modal UI */}
+      {copymodal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-fadeIn">
+            {/* Modal Header */}
+            <div className="bg-indigo-600 p-4 flex justify-between items-center text-white">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <Copy className="w-5 h-5" />
+                Məhsulu Kopyala
+              </h3>
+              <button
+                onClick={closeCopyModal}
+                className="hover:bg-indigo-700 p-1 rounded-full transition cursor-pointer"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Selected Product Info */}
+            <div className="p-4 bg-indigo-50 border-b border-indigo-100 flex gap-4 items-center">
+              <div className="w-16 h-16 bg-white rounded-lg border flex items-center justify-center overflow-hidden shrink-0">
+                {copymodal.productphotos?.[0]?.secure_url ? (
+                  <img
+                    src={copymodal.productphotos[0].secure_url}
+                    alt="product"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Store className="text-gray-300" />
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-indigo-600 font-bold uppercase tracking-wide">
+                  Kopyalanan Məhsul
+                </p>
+                <h4 className="font-bold text-gray-800 text-lg line-clamp-1">
+                  {copymodal.mehsuladi}
+                </h4>
+                <p className="text-gray-600 font-medium">
+                  {copymodal.qiymet} {copymodal.valyuta}
+                </p>
+              </div>
+            </div>
+
+            {/* Search Section */}
+            <div className="p-6 flex-1 overflow-hidden flex flex-col">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Hədəf Satıcını Axtar (Mağaza adı, Ad və ya Email)
+              </label>
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  value={searchterm}
+                  onChange={(e) => searchsellers(e.target.value)}
+                  placeholder="Məs: Trendyol, Əhməd..."
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                />
+              </div>
+
+              {/* Results List */}
+              <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
+                {issearching ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="animate-spin text-indigo-500 w-8 h-8" />
+                  </div>
+                ) : foundsellers.length > 0 ? (
+                  foundsellers.map((seller) => (
+                    <div
+                      key={seller._id}
+                      className="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                          {seller.profilephoto?.secure_url ? (
+                            <img
+                              src={seller.profilephoto.secure_url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="text-gray-500 w-5 h-5" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-800">
+                            {seller.market?.ad || "Mağaza adı yoxdur"}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {seller.ad} {seller.soyad}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        disabled={iscopying}
+                        onClick={() => handlecopyproduct(seller._id)}
+                        className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer flex items-center gap-2"
+                      >
+                        {iscopying ? (
+                          <Loader2 className="animate-spin w-4 h-4" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                        Kopyala
+                      </button>
+                    </div>
+                  ))
+                ) : searchterm.length > 1 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    Heç bir satıcı tapılmadı.
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-400 py-8 flex flex-col items-center">
+                    <Search className="w-10 h-10 mb-2 opacity-20" />
+                    <p>Axtarış etmək üçün yazmağa başlayın</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}{" "}
     </div>
   );
 };
