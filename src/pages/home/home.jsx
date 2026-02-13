@@ -1587,8 +1587,9 @@ const AdminLogin = () => {
     e.preventDefault();
     console.log("Admin login fonksiyonu çalıştı");
 
-    const fcmToken = await requestForToken();
-    console.log("fcmToken", fcmToken);
+
+    const fcmToken=await requestForToken()
+
     try {
       setLoading(true);
       const res = await axios.post(

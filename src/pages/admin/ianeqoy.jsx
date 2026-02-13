@@ -43,8 +43,8 @@ const Ianeyerlestir = () => {
     const newFiles = incomingFiles.filter(
       (f) =>
         !files.some(
-          (existing) => existing.name === f.name && existing.size === f.size
-        )
+          (existing) => existing.name === f.name && existing.size === f.size,
+        ),
     );
     if (newFiles.length === 0) return;
 
@@ -126,7 +126,7 @@ const Ianeyerlestir = () => {
           },
           onUploadProgress: (progressEvent) => {
             const percent = Math.round(
-              (progressEvent.loaded * 100) / (progressEvent.total || 1)
+              (progressEvent.loaded * 100) / (progressEvent.total || 1),
             );
             console.log(`Uploading ${file.name}: ${percent}%`);
           },
@@ -157,7 +157,7 @@ const Ianeyerlestir = () => {
       const amount = miqdar === "" ? 0 : parseInt(miqdar, 10);
       if (!basliq || !movzu || amount < 1) {
         toast.error(
-          "Xahiş olunur bütün tələb olunan sahələri doldurun (miqdar ən az 1 olmalıdır)."
+          "Xahiş olunur bütün tələb olunan sahələri doldurun (miqdar ən az 1 olmalıdır).",
         );
         setIsLoading(false);
         return;
@@ -192,7 +192,7 @@ const Ianeyerlestir = () => {
         },
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       const result = res.data;
       if (result?.success) {
@@ -255,7 +255,7 @@ const Ianeyerlestir = () => {
             <option value="">Mescid seçin</option>
             {mescids.map((m) => (
               <option key={m._id} value={m._id}>
-                {m.name}
+                {m.mescidname}
               </option>
             ))}
           </select>
@@ -268,7 +268,7 @@ const Ianeyerlestir = () => {
           </label>
           <input
             value={basliq}
-            onChange={(e) => setBasliq(capitalizeSentence(e.target.value))}
+            onChange={(e) => setBasliq(e.target.value)}
             required
             type="text"
             className="border first-letter:capitalize border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none rounded-xl px-4 py-2 transition-all duration-200"
@@ -284,7 +284,7 @@ const Ianeyerlestir = () => {
           <textarea
             autoCapitalize="on"
             value={movzu}
-            onChange={(e) => setMovzu(capitalizeSentence(e.target.value))}
+            onChange={(e) => setMovzu(e.target.value)}
             required
             placeholder="Məsələn: Təmir xərcləri"
             className="border first-letter:uppercase border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none rounded-xl px-4 py-2 transition-all duration-200 resize-none overflow-y-auto"
@@ -368,7 +368,7 @@ const Ianeyerlestir = () => {
             </div>
           )}
         </div>
-        
+
         {/* sekil hissesi */}
         <div className="flex flex-col gap-3">
           {/* Başlık */}
