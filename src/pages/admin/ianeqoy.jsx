@@ -8,7 +8,7 @@ import api from "../../utils/axiosclient";
 
 // NOTE: Placeholder values used for demonstration, replace with actual context/environment variables
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
-const UPLOAD_PRESET = "testpreset";
+const UPLOAD_PRESET = "iane_photos";
 
 const Ianeyerlestir = () => {
   const [basliq, setBasliq] = useState("");
