@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { API_URLS } from "../../utils/api";
 import useAuth from "../../redux/authredux";
 import api from "../../utils/axiosclient";
+import { toast } from "react-toastify";
 
 const Iane = () => {
   // State-lər
@@ -10,8 +11,7 @@ const Iane = () => {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [deletemenu, setDeletemenu] = useState(null); // ID saxlamaq üçün 'null' istifadə edilir
   const { accessToken } = useAuth();
-  
-  
+
   const sortIaneler = (list) => {
     // Görülməyənlər (isread: false) yuxarıda olsun
     return [...list].sort((a, b) => (a.isread ? 1 : 0) - (b.isread ? 1 : 0));
@@ -41,9 +41,9 @@ const Iane = () => {
         {},
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
-
+      toast.success("Uğurla silindi");
       // DB'den sildikten sonra state'i güncelle
       setIaneler((prev) => prev.filter((iane) => iane._id !== id));
       setDeletemenu(null); // Modal'ı kapat
@@ -56,7 +56,7 @@ const Iane = () => {
   const updateIaneStatusLocally = (id, key, value) => {
     setIaneler((prev) => {
       const updated = prev.map((iane) =>
-        iane._id === id ? { ...iane, [key]: value } : iane
+        iane._id === id ? { ...iane, [key]: value } : iane,
       );
       // isread dəyişəndə sıralama yenilənməlidir
       if (key === "isread") return sortIaneler(updated);
@@ -73,7 +73,7 @@ const Iane = () => {
 
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       updateIaneStatusLocally(id, "isread", true);
     } catch (err) {
@@ -88,7 +88,7 @@ const Iane = () => {
         {},
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       updateIaneStatusLocally(id, "isread", false);
     } catch (err) {
@@ -104,7 +104,7 @@ const Iane = () => {
         {},
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       updateIaneStatusLocally(id, "status", "approved");
     } catch (err) {
@@ -119,7 +119,7 @@ const Iane = () => {
         {},
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       updateIaneStatusLocally(id, "status", "rejected");
     } catch (err) {
@@ -137,7 +137,7 @@ const Iane = () => {
         },
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       updateIaneStatusLocally(id, "state", newState);
     } catch (err) {
@@ -147,7 +147,7 @@ const Iane = () => {
 
   const toggleExpand = (id) => {
     setExpandedIds((prev) =>
-      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id],
     );
   };
 
@@ -169,12 +169,8 @@ const Iane = () => {
 
   const statusText = (status) => {
     switch (status) {
-      case "pending":
-        return "Gözləmədə";
-      case "approved":
-        return "Qəbul olunub";
-      case "rejected":
-        return "Rədd edilib";
+      case "continue":
+        return "Davam edir";
       case "completed":
         return "Bitdi";
       default:
@@ -216,7 +212,7 @@ const Iane = () => {
               {/* 💻 Əsas Sətir */}
               <div className="grid grid-cols-12 gap-4 items-center">
                 {/* Başlıq, Mövzu və Yeni Etiketi */}
-                <div className="col-span-12 md:col-span-4 flex flex-col">
+                <div className="col-span-12 md:col-span-3 flex flex-col">
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-bold text-gray-900 line-clamp-1">
                       {iane.basliq}
@@ -241,7 +237,7 @@ const Iane = () => {
                 </div>
 
                 {/* Məbləğ & Tarix */}
-                <div className="col-span-4 md:col-span-3 lg:col-span-2 text-right">
+                <div className="col-span-6 md:col-span-2 text-right items-center flex flex-col">
                   <p className="font-extrabold text-2xl text-indigo-600">
                     {iane.yigilanmebleg || 0} ₼
                   </p>
@@ -254,17 +250,16 @@ const Iane = () => {
                   </p>
                 </div>
 
-                {/* Status */}
-                <div className="col-span-5 md:col-span-3 lg:col-span-2 text-center">
+                <div className="col-span-5 md:col-span-3 text-center">
                   <span
                     className={`text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider ${statusBadgeClass}`}
                   >
-                    {statusText(iane.status)}
+                    {statusText(iane.state)}
                   </span>
                 </div>
 
                 {/* Genişləndir Düyməsi */}
-                <div className="col-span-3 md:col-span-2 lg:col-span-2 flex justify-end">
+                <div className="col-span-1 md:col-span-2 flex justify-center">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -334,74 +329,24 @@ const Iane = () => {
                         ⚙️ Əməliyyatlar
                       </h4>
 
-                      {/* Sıra 1: Görüldü/Görülmədi */}
-                      <div className="flex gap-3">
-                        {!iane.isread ? (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMarkAsRead(iane._id);
-                            }}
-                            className={`flex-1 text-base cursor-pointer px-4 py-2 rounded-xl transition bg-green-500 hover:bg-green-600 text-white font-semibold shadow-md`}
-                          >
-                            ✅ Görüldü İşarələ
-                          </button>
-                        ) : (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMarkAsUnread(iane._id);
-                            }}
-                            className="flex-1 cursor-pointer text-base border-2 border-gray-300 rounded-xl py-2 px-4 hover:bg-gray-100 text-gray-700 font-semibold"
-                          >
-                            ❌ Görülmədi Et
-                          </button>
-                        )}
-                      </div>
-
                       {/* Sıra 2: Qəbul/Rədd & Bitdi Butonu */}
                       <div className="flex gap-3">
-                        {/* Qəbul/Rədd */}
-                        {iane.status === "pending" ||
-                        iane.status === "rejected" ? (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleApprove(iane._id);
-                            }}
-                            className="flex-1 text-base cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl transition font-semibold shadow-md"
-                          >
-                            👍 Qəbul et
-                          </button>
-                        ) : (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlereject(iane._id);
-                            }}
-                            className="flex-1 text-base cursor-pointer bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl transition font-semibold shadow-md"
-                          >
-                            👎 Rədd et
-                          </button>
-                        )}
                         {/* Bitdi / Devam edir Butonu */}
-                        {iane.status === "approved" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleComplete(iane._id, iane.state);
-                            }}
-                            className={`flex-1 text-base cursor-pointer px-4 py-2 rounded-xl transition font-semibold shadow-md ${
-                              iane.state === "completed"
-                                ? "bg-gray-500 hover:bg-gray-600 text-white"
-                                : "bg-blue-600 hover:bg-blue-700 text-white"
-                            }`}
-                          >
-                            {iane.state === "completed"
-                              ? "🔄 Davam etdir"
-                              : "✅ Ianeni bitir"}
-                          </button>
-                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleComplete(iane._id, iane.state);
+                          }}
+                          className={`flex-1 text-base cursor-pointer px-4 py-2 rounded-xl transition font-semibold shadow-md ${
+                            iane.state === "completed"
+                              ? "bg-gray-500 hover:bg-gray-600 text-white"
+                              : "bg-blue-600 hover:bg-blue-700 text-white"
+                          }`}
+                        >
+                          {iane.state === "completed"
+                            ? "🔄 Davam etdir"
+                            : "✅ Ianeni bitir"}
+                        </button>
                       </div>
 
                       {/* Sıra 3: Dəyiş/Sil (Diqqətli Əməliyyatlar) */}
@@ -508,6 +453,7 @@ const Iane = () => {
                 }}
                 className="px-6 py-2 cursor-pointer rounded-xl bg-red-600 text-white hover:bg-red-700 transition font-semibold shadow-lg"
               >
+                
                 Bəli, Sil
               </button>
             </div>
