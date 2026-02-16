@@ -58,15 +58,15 @@ const EditModal = ({ product, onClose }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deliveryType, setDeliveryType] = useState("SELF"); // 'SELF' və ya 'YANGO'
   const [isCustomDelivery, setIsCustomDelivery] = useState(
-    product?.deliveryoptions?.iscustomdelivery || false
+    product?.deliveryoptions?.iscustomdelivery || false,
   );
   const [customFee, setCustomFee] = useState(
-    product?.deliveryoptions?.customfee || 0
+    product?.deliveryoptions?.customfee || 0,
   );
   console.log("product", product.terkibi);
   const { user } = useAuth();
   const [selectedBranches, setSelectedBranches] = useState(
-    product.filiallar || []
+    product.filiallar || [],
   );
   const [newImages, setNewImages] = useState([]); // Newly selected files to upload
   const [removedImagePublicIds, setRemovedImagePublicIds] = useState([]);
@@ -76,43 +76,35 @@ const EditModal = ({ product, onClose }) => {
 
   // Kaydedilecek fotoğraflar: Silinmek üzere işaretlenmemiş olanlar + Yeniler
   const keptExistingPhotos = allExistingPhotos.filter(
-    (photo) => !removedImagePublicIds.includes(photo.public_id)
+    (photo) => !removedImagePublicIds.includes(photo.public_id),
   );
 
   // Obyekt massivini "Başlıq: item1, item2. " formatına çevirir
   const formatToReadableString = (data) => {
     if (!data) return "";
 
-    // 1. Əgər massivdirsə (Array)
     if (Array.isArray(data)) {
       if (data.length === 0) return "";
-
-      // İlk elementi yoxlayırıq ki, formatı müəyyən edək
       const firstItem = data[0];
 
-      // HAL A: Yeni strukturlaşmış format [{header: "...", items: [...]}]
       if (
         typeof firstItem === "object" &&
         firstItem !== null &&
         firstItem.header
       ) {
         return data
-          .map((item) => `${item.header}  ${item.items?.join("\n ") || ""}`)
-          .join("\n ");
+          .map((item) => {
+            const header = item.header.endsWith(":")
+              ? item.header
+              : `${item.header}:`;
+            const items = item.items?.join("\n") || "";
+            return `${header}\n${items}`;
+          })
+          .join("\n\n");
       }
-
-      // HAL B: Köhnə string massivi formatı ["un", "şəkər", "su"]
-      if (typeof firstItem === "string") {
-        return data.join(", ");
-      }
+      return data.join("\n");
     }
-
-    // 2. HAL C: Əgər sadəcə bir string-dirsə "Məhsul haqqında mətn"
-    if (typeof data === "string") {
-      return data;
-    }
-
-    return "";
+    return typeof data === "string" ? data : "";
   };
 
   const [formData, setFormData] = useState({
@@ -135,53 +127,59 @@ const EditModal = ({ product, onClose }) => {
   });
 
   // Yazını [{header, items}] formatına çevirir
-  const parseKeyValueData = (text) => {
-    if (!text) return [];
+  const parseKeyValueData = (text, texttype) => {
+    if (!text || typeof text !== "string") return [];
 
     const lines = text
       .split("\n")
       .map((l) => l.trim())
       .filter(Boolean);
+
     const result = [];
     let currentHeader = null;
     let currentItems = [];
 
     lines.forEach((line) => {
-      // 1. Başlığı tanımaq (Məs: "1. Serum:", "NƏTİCƏ" və ya "Serum:")
-      // Regex: Sətir rəqəmlə başlaya bilər, sonunda mütləq ":" var və ya tam böyük hərflərlədir
-      if (line.endsWith(":") || line === "NƏTİCƏ" || /^\d+\./.test(line)) {
-        // Əgər əvvəlki başlıq varsa, onu nəticəyə əlavə et
+      // Başlığı tanımaq üçün daha çevik yoxlama:
+      // Sonda ":" olması və ya sətirin tam böyük hərflərlə olması
+      const isHeader =
+        line.endsWith(":") ||
+        (line === line.toUpperCase() && line.length > 3) ||
+        /^\d+\./.test(line);
+
+      if (isHeader) {
         if (currentHeader) {
           result.push({ header: currentHeader, items: currentItems });
         }
-
-        // Yeni başlığı təmizlə (nömrəni və ":" işarəsini sil)
         currentHeader = line
-          .replace(/^\d+\.\s*/, "") // "1. " hissəsini silir
+          .replace(/^\d+\.\s*/, "")
+          .replace(/:$/, "")
           .trim();
-
         currentItems = [];
-      }
-      // 2. Elementləri tanımaq (Məs: "*", "✓" ilə başlayanlar)
-      else if (
-        line.endsWith("*") ||
-        line.endsWith(";")
-      ) {
-        const cleanedItem = line.replace(/^[*✓]\s*/, "").trim();
-        currentItems.push(cleanedItem);
-      }
-      // 3. Əgər başlıq yoxdursa və sadə mətndirsə (Ehtiyat variant)
-      else if (currentHeader) {
-        currentItems.push(line);
+      } else {
+        // Əgər başlıq yoxdursa, mətni təmizləyib item kimi əlavə et
+        const cleanedItem = line
+          .replace(/^[*✓-]\s*/, "")
+          .replace(/[;*]$/, "")
+          .trim();
+        if (currentHeader) {
+          currentItems.push(cleanedItem);
+        } else {
+          // Əgər mətn başlıqsız başlayıbsa, avtomatik bir başlıq yarat
+          texttype === "aciqlama"
+            ? (currentHeader = "Açıqlama")
+            : (currentHeader = "Tərkib");
+          currentItems.push(cleanedItem);
+        }
       }
     });
 
-    // Sonuncu qrupu əlavə et
     if (currentHeader) {
       result.push({ header: currentHeader, items: currentItems });
     }
 
-    return result;
+    // Əgər heç bir struktur tapılmadısa, orijinal mətni massiv daxilində qaytar
+    return result.length > 0 ? result : [{ header: "Ümumi", items: [text] }];
   };
 
   const handleDragOver = (e) => {
@@ -207,7 +205,7 @@ const EditModal = ({ product, onClose }) => {
   const handleDrop = (e) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files).filter((f) =>
-      f.type.startsWith("image/")
+      f.type.startsWith("image/"),
     );
     setNewImages((prev) => [...prev, ...files]);
     if (fileInputRef.current) fileInputRef.current.value = null;
@@ -277,7 +275,7 @@ const EditModal = ({ product, onClose }) => {
   const handleBranchSelect = (addr) => {
     setSelectedBranches((prev) => {
       const isSelected = prev.find(
-        (b) => b.id === addr._id || b._id === addr._id
+        (b) => b.id === addr._id || b._id === addr._id,
       );
 
       if (isSelected) {
@@ -310,7 +308,7 @@ const EditModal = ({ product, onClose }) => {
       case !!formData.endirimliqiymet && !formData.qiymet:
         toast.error(
           "Endirimli qiymət varsa qiymət də daxil edilməlidir. Zəhmət olmasa hər iki xananı doldurun",
-          { autoClose: 6000 }
+          { autoClose: 6000 },
         );
         setUploading(false);
         setIsSaving(false);
@@ -347,7 +345,7 @@ const EditModal = ({ product, onClose }) => {
 
     // 1) Yeni şəkilləri yükləyin
     const uploadedImages = await Promise.all(
-      newImages.map((img) => uploadFileToCloudinary(img))
+      newImages.map((img) => uploadFileToCloudinary(img)),
     );
     setUploading(false);
 
@@ -361,8 +359,11 @@ const EditModal = ({ product, onClose }) => {
     // 2) Qorunmuş mövcud şəkilləri və yeni yüklənmiş şəkilləri birləşdirin
     const finalProductPhotos = [...keptExistingPhotos, ...validNewImages];
 
-    const formattedAciqlama = parseKeyValueData(formData.aciqlama);
-    const formattedterkib = parseKeyValueData(formData.terkibi);
+    const formattedAciqlama = parseKeyValueData(formData.aciqlama, "aciqlama");
+    const formattedterkib = parseKeyValueData(formData.terkibi, "terkib");
+
+    console.log("Göndərilən Açıqlama:", formattedAciqlama);
+    console.log("Göndərilən Tərkib:", formattedterkib);
 
     // 4) Payload hazırlayın
     const payload = {
@@ -389,12 +390,14 @@ const EditModal = ({ product, onClose }) => {
       },
     };
 
+    console.log("payload");
+
     // 5) Backend'ə göndərin
     setSending(true);
     try {
       const res = await api.patch(API_URLS.SATICI.MEHSULEDIT, payload); // api ve API_URLS'in tanımlı olduğunu varsayıyoruz
       // Mocking API call for demonstration:
-
+      console.log("res.data:", res.data);
       setSending(false);
 
       if (res.data.success) {
@@ -745,7 +748,7 @@ const EditModal = ({ product, onClose }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {user?.market?.address?.map((addr) => {
                       const isChecked = selectedBranches.some(
-                        (b) => b.id === addr._id
+                        (b) => b.id === addr._id,
                       );
                       return (
                         <div
@@ -792,7 +795,7 @@ const EditModal = ({ product, onClose }) => {
                 <div className="flex gap-3 overflow-x-auto bg-gray-100 p-3 rounded-lg border">
                   {allExistingPhotos.map((photo, idx) => {
                     const isMarkedForDeletion = removedImagePublicIds.includes(
-                      photo.public_id
+                      photo.public_id,
                     );
 
                     return (
@@ -963,8 +966,8 @@ const EditModal = ({ product, onClose }) => {
                 {uploading
                   ? "Şəkillər Yüklənir..."
                   : sending || isSaving
-                  ? "Saxlanılır..."
-                  : "Saxla"}
+                    ? "Saxlanılır..."
+                    : "Saxla"}
               </button>
             </div>
           </div>

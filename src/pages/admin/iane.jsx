@@ -1,8 +1,368 @@
-import React, { useEffect, useState } from "react";
-import { API_URLS } from "../../utils/api";
+import React, { useEffect, useState, useRef } from "react";
+import { ADMIN_URL, API_URLS } from "../../utils/api";
 import useAuth from "../../redux/authredux";
 import api from "../../utils/axiosclient";
 import { toast } from "react-toastify";
+import { X, ImagePlus, Loader2 } from "lucide-react";
+import axios from "axios";
+
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dcn2gnqln/upload";
+const UPLOAD_PRESET = "iane_photos";
+
+const EditIaneModal = ({ iane, onClose, onUpdate }) => {
+  const [formData, setFormData] = useState({
+    basliq: iane.basliq || "",
+    movzu: iane.movzu || "",
+    miqdar: iane.miqdar || "",
+    odenislinki: iane.odenislinki || "",
+    bitir: iane.bitir ? iane.bitir.split("T")[0] : "",
+    odenissehifesiaz: iane.odenissehifesiaz || "",
+    odenissehifesiAr: iane.odenissehifesiAr || "",
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [newFiles, setNewFiles] = useState([]);
+  const [newPreviews, setNewPreviews] = useState([]);
+  const [removedPublicIds, setRemovedPublicIds] = useState([]);
+  const [currentPhotos, setCurrentPhotos] = useState(iane.photos || []);
+
+  const [listImageFile, setListImageFile] = useState(null);
+  const [listPreview, setListPreview] = useState(
+    iane.cardImage?.card_image_url || null,
+  );
+  const listImageRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleFilesChange = (e) => {
+    const files = Array.from(e.target.files);
+    setNewFiles((prev) => [...prev, ...files]);
+    const previews = files.map((f) => URL.createObjectURL(f));
+    setNewPreviews((prev) => [...prev, ...previews]);
+  };
+
+  const removeListImage = () => {
+    // Əgər mövcud bir kart şəkli varsa, onu silinənlər siyahısına salırıq
+    if (iane.cardImage?.card_public_id) {
+      setRemovedPublicIds((prev) => [...prev, iane.cardImage.card_public_id]);
+    }
+    setListPreview(null);
+    setListImageFile(null);
+  };
+
+  const removeCurrentPhoto = (photo) => {
+    setRemovedPublicIds((prev) => [...prev, photo.public_id]);
+    setCurrentPhotos((prev) =>
+      prev.filter((p) => p.public_id !== photo.public_id),
+    );
+  };
+
+  const uploadToCloudinary = async (file) => {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", UPLOAD_PRESET);
+    const res = await axios.post(CLOUDINARY_URL, data);
+    return res.data;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      // 1. Yeni şəkilləri yüklə
+      let uploadedPhotos = [];
+      if (newFiles.length > 0) {
+        const results = await Promise.all(newFiles.map(uploadToCloudinary));
+        uploadedPhotos = results.map((r) => ({
+          name: r.original_filename,
+          url: r.secure_url,
+          public_id: r.public_id,
+        }));
+      }
+
+      // 2. Yeni Kart şəklini yüklə (əgər dəyişibsə)
+      let finalCardImage = iane.cardImage;
+      if (listImageFile) {
+        // Əgər yeni şəkil seçilibsə, köhnəsini silinənlərə əlavə et (əgər yuxarıda etməmişiksə)
+        if (
+          iane.cardImage?.card_public_id &&
+          !removedPublicIds.includes(iane.cardImage.card_public_id)
+        ) {
+          setRemovedPublicIds((prev) => [
+            ...prev,
+            iane.cardImage.card_public_id,
+          ]);
+        }
+
+        const r = await uploadToCloudinary(listImageFile);
+        finalCardImage = {
+          card_image_url: r.secure_url,
+          card_public_id: r.public_id,
+        };
+      } else if (!listPreview) {
+        // Əgər preview yoxdursa və yeni fayl da yoxdursa, kart şəkli silinib
+        finalCardImage = null;
+      } else {
+        // Heç bir dəyişiklik yoxdur, köhnəni saxla
+        finalCardImage = iane.cardImage;
+      }
+
+      // 3. Backend-ə göndər
+      const payload = {
+        ianeId: iane._id,
+        ...formData,
+        removedphotos: removedPublicIds,
+        currentphotos: currentPhotos,
+        newphotos: uploadedPhotos,
+        cardImage: finalCardImage,
+      };
+
+      const res = await api.patch(`${ADMIN_URL}/editiane`, payload);
+      if (res.data.success) {
+        toast.success("İanə yeniləndi");
+        onUpdate(res.data.data);
+        onClose();
+      }
+    } catch (error) {
+      toast.error("Xəta baş verdi");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl p-8">
+        <div className="flex justify-between items-center mb-6 border-b pb-4">
+          <h2 className="text-2xl font-bold text-indigo-800">
+            İanəni Redaktə Et
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition cursor-pointer"
+          >
+            <X size={28} />
+          </button>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
+          {/* Başlıq */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Başlıq
+            </label>
+            <input
+              name="basliq"
+              value={formData.basliq}
+              onChange={handleChange}
+              className="border border-gray-300 p-2.5 rounded-xl outline-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+              required
+            />
+          </div>
+
+          {/* Məbləğ */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Məbləğ (₼)
+            </label>
+            <input
+              name="miqdar"
+              type="number"
+              value={formData.miqdar}
+              onChange={handleChange}
+              className="border border-gray-300 p-2.5 rounded-xl outline-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+              required
+            />
+          </div>
+
+          {/* Ödəniş Linki */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Ödəniş linki (URL)
+            </label>
+            <input
+              name="odenislinki"
+              type="text"
+              value={formData.odenislinki}
+              onChange={handleChange}
+              placeholder="https://..."
+              className="border border-gray-300 p-2.5 rounded-xl outline-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+              required
+            />
+          </div>
+
+          {/* Bitmə Tarixi */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Bitmə tarixi
+            </label>
+            <input
+              name="bitir"
+              type="date"
+              value={formData.bitir}
+              onChange={handleChange}
+              min={new Date().toISOString().split("T")[0]}
+              className="border border-gray-300 p-2.5 rounded-xl outline-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+            />
+          </div>
+
+          {/* Açıqlama (Mövzu) */}
+          <div className="flex flex-col col-span-2">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Açıqlama (Problemin təsviri)
+            </label>
+            <textarea
+              name="movzu"
+              value={formData.movzu}
+              onChange={handleChange}
+              className="border border-gray-300 p-3 rounded-xl h-28 outline-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all resize-none"
+              required
+            />
+          </div>
+
+          {/* Ödəniş səhifəsi AZ */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Ödəniş səhifəsi mətni (AZ)
+            </label>
+            <textarea
+              name="odenissehifesiaz"
+              value={formData.odenissehifesiaz}
+              onChange={handleChange}
+              placeholder="Ayə və ya hədis..."
+              className="border border-gray-300 p-3 rounded-xl h-24 outline-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all resize-none"
+              required
+            />
+          </div>
+
+          {/* Ödəniş səhifəsi AR */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Ödəniş səhifəsi mətni (AR)
+            </label>
+            <textarea
+              name="odenissehifesiAr"
+              dir="rtl"
+              value={formData.odenissehifesiAr}
+              onChange={handleChange}
+              placeholder="الآية أو الحديث..."
+              className="border border-gray-300 p-3 rounded-xl h-24 outline-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all resize-none text-right"
+              required
+            />
+          </div>
+
+          <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+            {/* Kart Şəkli */}
+            <div className="border p-4 rounded-2xl bg-gray-50">
+              <p className="text-sm font-bold mb-2">Kart Şəkli</p>
+              {listPreview && (
+                <div className="relative w-32 h-32 mb-2">
+                  <img
+                    src={listPreview}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setListPreview(null);
+                      setListImageFile(null);
+                    }}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+              <input
+                type="file"
+                ref={listImageRef}
+                className="hidden"
+                onChange={(e) => {
+                  setListImageFile(e.target.files[0]);
+                  setListPreview(URL.createObjectURL(e.target.files[0]));
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => listImageRef.current.click()}
+                className="text-xs bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg"
+              >
+                Dəyişdir
+              </button>
+            </div>
+
+            {/* Qalereya */}
+            <div className="border p-4 rounded-2xl bg-gray-50">
+              <p className="text-sm font-bold mb-2">Qalereya</p>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {currentPhotos.map((p) => (
+                  <div key={p.public_id} className="relative w-16 h-16">
+                    <img
+                      src={p.url}
+                      className="w-full h-full object-cover rounded shadow"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeCurrentPhoto(p)}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <input
+                type="file"
+                multiple
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleFilesChange}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                className="flex items-center gap-1 text-xs bg-green-100 text-green-600 px-3 py-1 rounded-lg"
+              >
+                <ImagePlus size={14} /> Yeni əlavə et
+              </button>
+            </div>
+          </div>
+
+          {/* Düymələr */}
+          <div className="col-span-2 flex gap-4 mt-6 border-t pt-6">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 hover:shadow-lg transition-all disabled:bg-gray-400 cursor-pointer"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="animate-spin" size={20} /> Yenilənir...
+                </span>
+              ) : (
+                "Dəyişiklikləri Saxla"
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-gray-200 text-gray-700 py-3.5 rounded-xl font-bold hover:bg-gray-300 transition-all cursor-pointer"
+            >
+              Ləğv Et
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const Iane = () => {
   // State-lər
@@ -11,6 +371,14 @@ const Iane = () => {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [deletemenu, setDeletemenu] = useState(null); // ID saxlamaq üçün 'null' istifadə edilir
   const { accessToken } = useAuth();
+  const [editingIane, setEditingIane] = useState(null); // Redaktə üçün state
+
+  // 2. Yenilənmə funksiyası (Modal bağlandıqdan sonra siyahını yeniləmək üçün)
+  const handleUpdateList = (updatedData) => {
+    setIaneler((prev) =>
+      prev.map((item) => (item._id === updatedData._id ? updatedData : item)),
+    );
+  };
 
   const sortIaneler = (list) => {
     // Görülməyənlər (isread: false) yuxarıda olsun
@@ -195,7 +563,6 @@ const Iane = () => {
           const expanded = expandedIds.includes(iane._id);
           const statusBadgeClass = getStatusBadge(iane.status);
           // const isCompleted = iane.status === "completed";
-
           return (
             <div
               key={iane._id}
@@ -311,6 +678,18 @@ const Iane = () => {
                       </p>
                       <p className="text-gray-600">
                         <span className="font-semibold text-gray-800">
+                          Ödəniş səhifəsi açıqlama(Az):
+                        </span>{" "}
+                        {iane.odenissehifesiaz}
+                      </p>{" "}
+                      <p className="text-gray-600">
+                        <span className="font-semibold text-gray-800">
+                          Ödəniş səhifəsi açıqlama(Az):
+                        </span>{" "}
+                        {iane.odenissehifesiAr}
+                      </p>
+                      <p className="text-gray-600">
+                        <span className="font-semibold text-gray-800">
                           Yaradılma:
                         </span>{" "}
                         {new Date(iane.createdAt).toLocaleString("az-AZ")}
@@ -351,7 +730,13 @@ const Iane = () => {
 
                       {/* Sıra 3: Dəyiş/Sil (Diqqətli Əməliyyatlar) */}
                       <div className="flex gap-3 mt-3 pt-3 border-t border-gray-100">
-                        <button className="flex-1 px-4 py-2 cursor-pointer rounded-xl hover:bg-indigo-500 duration-300 bg-indigo-400 text-white text-base font-semibold shadow-md">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingIane(iane);
+                          }}
+                          className="flex-1 px-4 py-2 cursor-pointer rounded-xl hover:bg-indigo-500 duration-300 bg-indigo-400 text-white text-base font-semibold shadow-md"
+                        >
                           📝 Dəyiş
                         </button>
                         <button
@@ -366,33 +751,55 @@ const Iane = () => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Şəkillər Seksiyası */}
-                  {iane.photos && iane.photos.length > 0 && (
+                  <div className="flex flex-row items-center gap-x-6">
                     <div className="mt-8 pt-5 border-t border-gray-200">
                       <h4 className="font-extrabold text-lg mb-4 text-gray-700">
-                        🖼️ Şəkillər ({iane.photos.length}):
+                        🖼️ Kart şəkli:
                       </h4>
                       <div className="flex flex-wrap gap-4">
-                        {iane.photos.map((photo, index) => (
-                          <div
-                            key={index}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedPhoto(photo);
-                            }}
-                            className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border-4 border-white hover:border-indigo-500 transition shadow-lg transform hover:scale-105"
-                          >
-                            <img
-                              src={photo.url}
-                              alt={photo.name || "İanə şəkli"}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedPhoto(iane.cardImage.card_image_url);
+                          }}
+                          className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border-4 border-white hover:border-indigo-500 transition shadow-lg transform hover:scale-105"
+                        >
+                          <img
+                            src={iane.cardImage.card_image_url}
+                            alt={"İanə kart şəkli"}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                       </div>
                     </div>
-                  )}
+
+                    {/* Şəkillər Seksiyası */}
+                    {iane.photos && iane.photos.length > 0 && (
+                      <div className="mt-8 pt-5 border-t border-gray-200">
+                        <h4 className="font-extrabold text-lg mb-4 text-gray-700">
+                          🖼️ Şəkillər ({iane.photos.length}):
+                        </h4>
+                        <div className="flex flex-wrap gap-4">
+                          {iane.photos.map((photo, index) => (
+                            <div
+                              key={index}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedPhoto(photo.url);
+                              }}
+                              className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border-4 border-white hover:border-indigo-500 transition shadow-lg transform hover:scale-105"
+                            >
+                              <img
+                                src={photo.url}
+                                alt={photo.name || "İanə şəkli"}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -411,13 +818,10 @@ const Iane = () => {
               ✕
             </button>
             <img
-              src={selectedPhoto.url}
-              alt={selectedPhoto.name}
+              src={selectedPhoto}
+              alt={selectedPhoto}
               className="rounded-xl max-h-[85vh] object-contain shadow-2xl border-4 border-white"
             />
-            <p className="text-white mt-4 text-base font-medium text-center">
-              {selectedPhoto.name}
-            </p>
           </div>
         </div>
       )}
@@ -453,12 +857,19 @@ const Iane = () => {
                 }}
                 className="px-6 py-2 cursor-pointer rounded-xl bg-red-600 text-white hover:bg-red-700 transition font-semibold shadow-lg"
               >
-                
                 Bəli, Sil
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {editingIane && (
+        <EditIaneModal
+          iane={editingIane}
+          onClose={() => setEditingIane(null)}
+          onUpdate={handleUpdateList}
+        />
       )}
     </div>
   );

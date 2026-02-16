@@ -42,7 +42,7 @@ const Mehsullarr = () => {
       // Using the MOCK API Client
       const res = await api.get(`${API_URLS.SATICI.GETPRODUCTS}/${id}`);
       setmehsullar(
-        Array.isArray(res.data?.mehsullar) ? res.data.mehsullar : []
+        Array.isArray(res.data?.mehsullar) ? res.data.mehsullar : [],
       );
     } catch (error) {
       console.error("Məhsulları gətirərkən xəta baş verdi:", error);
@@ -87,7 +87,7 @@ const Mehsullarr = () => {
       const res = await api.patch(
         API_URLS.SATICI.TOGGLEPRODUCTSTATUS,
         { id },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
 
       if (res.data.success) {
@@ -121,7 +121,7 @@ const Mehsullarr = () => {
       const res = await api.patch(
         API_URLS.SATICI.TOGGLEPRODUCTTUKENDI,
         { id },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
 
       if (res.data.success) {
@@ -188,7 +188,7 @@ const Mehsullarr = () => {
       (!freeThresholdValue || freeThresholdValue <= 0)
     ) {
       toast.error(
-        "Zəhmət olmasa pulsuz çatdırılma üçün düzgün limit daxil edin!"
+        "Zəhmət olmasa pulsuz çatdırılma üçün düzgün limit daxil edin!",
       );
       return;
     }
@@ -210,7 +210,7 @@ const Mehsullarr = () => {
         payload,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
 
       if (res.data.success) {
@@ -248,7 +248,7 @@ const Mehsullarr = () => {
     setissearching(true);
     try {
       const res = await api.get(
-        `${SATICI_URL}/getsaticilar?query=${query}&saticiId=${user._id}`
+        `${SATICI_URL}/getsaticilar?query=${query}&saticiId=${user._id}`,
       );
 
       if (res.data.success) {
@@ -267,7 +267,7 @@ const Mehsullarr = () => {
     }
 
     const confirmcopy = window.confirm(
-      "Bu məhsulu seçilən satıcıya kopyalamağı təsdiqləyirsinizmi"
+      "Bu məhsulu seçilən satıcıya kopyalamağı təsdiqləyirsinizmi",
     );
     if (!confirmcopy) return;
 
@@ -354,7 +354,7 @@ const Mehsullarr = () => {
       </div>
 
       {/* 4. Qiymət (Price) - col-span-2 (Mobile: col-span-1) */}
-      <div className="col-span-2 text-sm font-bold text-indigo-600 text-center">
+      <div className="col-span-1 text-sm font-bold borde text-indigo-600 text-center">
         {mehsul.qiymet?.toFixed(2) || "0.00"} {mehsul.valyuta || "₼"}
       </div>
 
@@ -390,19 +390,8 @@ const Mehsullarr = () => {
         )}
       </div>
 
-      <div className="col-span-1  flex justify-center borde w-full ml-auto">
-        {/* View Details Button (Uses custom notification panel) */}
-        <button
-          onClick={() => setcopymodal(mehsul)}
-          className="p-2 flex justify-center items-center text-gray-500 border cursor-pointer hover:text-blue-600 hover:bg-blue-100 rounded-full transition duration-150"
-          title="Detallara bax"
-        >
-          <Copy className="h-5 w-5" />
-        </button>
-      </div>
-
       {/* 6. Action Buttons (View/Edit) - col-span-1 */}
-      <div className="col-span-1  flex justify-center borde space-x-4 px-3 ml-auto">
+      <div className="col-span-2  flex justify-center borde w-full space-x-3 px-3 ml-auto">
         {/* View Details Button (Uses custom notification panel) */}
         <button
           onClick={() => openDetailModal(mehsul)}
@@ -419,6 +408,18 @@ const Mehsullarr = () => {
           title="Redaktə Et"
         >
           <Pencil className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* kopyala */}
+      <div className="col-span-1  flex justify-center borde w-full ml-auto">
+        {/* View Details Button (Uses custom notification panel) */}
+        <button
+          onClick={() => setcopymodal(mehsul)}
+          className="p-2 flex justify-center items-center text-gray-500 border cursor-pointer hover:text-blue-600 hover:bg-blue-100 rounded-full transition duration-150"
+          title="Detallara bax"
+        >
+          <Copy className="h-5 w-5" />
         </button>
       </div>
     </div>
@@ -445,10 +446,10 @@ const Mehsullarr = () => {
           <div className="col-span-2">Məhsul Adı</div>
           <div className="col-span-2 text-center">Kateqoriya</div>
           <div className="col-span-1 text-center">Tükəndi</div>
-          <div className="col-span-2 text-center">Qiymət</div>
+          <div className="col-span-1 text-center">Qiymət</div>
           <div className="col-span-1  text-center">Status</div>
+          <div className="col-span-2 text-center">Hərəkətlər</div>
           <div className="col-span-1  text-center">Kopyala</div>
-          <div className="col-span-1 text-center">Hərəkətlər</div>
         </div>
 
         {/* Loading State */}

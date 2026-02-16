@@ -21,7 +21,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Dəyişənlər: Refresh prosesini idarə etmək üçün
@@ -72,16 +72,16 @@ api.interceptors.response.use(
         const role = state.role;
 
         if (!role) throw new Error("Rol tapılmadı");
-
+        console.log("baseurl:", API_BASE_URL);
         // Refresh token endpointinə sorğu atırıq
         // Cookie avtomatik gedəcək (withCredentials: true)
         const response = await axios.post(
           `${API_BASE_URL}/webapi/${role}/refreshToken`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
         const { accessToken, user } = response.data;
-        console.log('data:')
+        console.log("data:");
         console.log("accessToken", accessToken);
         // Yeni məlumatları Redux-a yazırıq
         store.dispatch(setauthdata({ accessToken, user, role }));
@@ -104,7 +104,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;
