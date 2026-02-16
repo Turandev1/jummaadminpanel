@@ -47,7 +47,7 @@ const Sidebar = () => {
   const menuItems = {
     admin: [
       { to: "/admin", label: "Admin panel", icon: LayoutDashboard },
-      { to: "/admin/iane", label: "Ianə", icon: HeartHandshake },
+      { to: "/admin/iane", label: "İanələr", icon: HeartHandshake },
       { to: "/admin/qeydiyyat", label: "Qeydiyyat", icon: UserPlus },
       { to: "/admin/mescids", label: "Mescidlər", icon: PiMosqueLight },
       { to: "/admin/namazgahlar", label: "Namazgahlar", icon: GiArabicDoor },
@@ -60,7 +60,7 @@ const Sidebar = () => {
     ],
     imam: [
       { to: "/imam", label: "İmam paneli", icon: ShieldCheck },
-      { to: "/imam/ianeqoy", label: "Ianə", icon: HeartHandshake },
+      { to: "/imam/ianeqoy", label: "İanələr", icon: HeartHandshake },
     ],
     satici: [
       { to: "/satici", label: "Profil", icon: User },

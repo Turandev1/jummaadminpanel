@@ -18,6 +18,7 @@ const EditIaneModal = ({ iane, onClose, onUpdate }) => {
     bitir: iane.bitir ? iane.bitir.split("T")[0] : "",
     odenissehifesiaz: iane.odenissehifesiaz || "",
     odenissehifesiAr: iane.odenissehifesiAr || "",
+    sourcetext: iane.sourcetext || "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -258,10 +259,25 @@ const EditIaneModal = ({ iane, onClose, onUpdate }) => {
             />
           </div>
 
+          {/* source */}
+          <div className="flex flex-col col-span-2">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Mənbə(Ayə və ya hədis nömrəsi)
+            </label>
+            <input
+              name="sourcetext"
+              value={formData.sourcetext}
+              onChange={handleChange}
+              placeholder="Məs:Tövbə 12;"
+              className="border border-gray-300 p-3 rounded-xl h-12 outline-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all resize-none"
+              required
+            />
+          </div>
+
           <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
             {/* Kart Şəkli */}
             <div className="border p-4 rounded-2xl bg-gray-50">
-              <p className="text-sm font-bold mb-2">Kart Şəkli</p>
+              <p className="text-sm font-bold mb-2">Kart Şəkli(Məscid)</p>
               {listPreview && (
                 <div className="relative w-32 h-32 mb-2">
                   <img
@@ -300,7 +316,7 @@ const EditIaneModal = ({ iane, onClose, onUpdate }) => {
 
             {/* Qalereya */}
             <div className="border p-4 rounded-2xl bg-gray-50">
-              <p className="text-sm font-bold mb-2">Qalereya</p>
+              <p className="text-sm font-bold mb-2">Ianə şəkilləri</p>
               <div className="flex flex-wrap gap-2 mb-2">
                 {currentPhotos.map((p) => (
                   <div key={p.public_id} className="relative w-16 h-16">
@@ -313,7 +329,7 @@ const EditIaneModal = ({ iane, onClose, onUpdate }) => {
                       onClick={() => removeCurrentPhoto(p)}
                       className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full"
                     >
-                      <X size={12} />
+                      <X size={18} />
                     </button>
                   </div>
                 ))}
@@ -682,7 +698,6 @@ const Iane = () => {
                       <h4 className="font-extrabold text-lg text-gray-700 mb-2 border-b pb-1">
                         📋 Ətraflı Məlumat
                       </h4>
-                    
                       <p className="text-gray-600">
                         <span className="font-semibold text-gray-800">
                           Məscid:

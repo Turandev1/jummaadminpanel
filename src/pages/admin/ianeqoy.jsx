@@ -29,6 +29,7 @@ const Ianeyerlestir = () => {
   const [listImage, setListImage] = useState(null);
   const [listPreview, setListPreview] = useState(null);
   const listImageRef = useRef(null);
+  const [sourcetext, setsourcetext] = useState("");
   const [odenissehifesiaz, setOdenissehifesiaz] = useState("");
   const [odenissehifesiAr, setOdenissehifesiAr] = useState("");
 
@@ -226,6 +227,7 @@ const Ianeyerlestir = () => {
         cardImage,
         odenissehifesiaz,
         odenissehifesiAr,
+        sourcetext,
       });
 
       const result = res.data;
@@ -355,6 +357,21 @@ const Ianeyerlestir = () => {
             />
           </div>
 
+          {/* menbe */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-700 font-medium mb-1">
+              Mənbə(Ayə vəya hədis nömrəsi)
+            </label>
+            <input
+              value={sourcetext}
+              onChange={(e) => setsourcetext(e.target.value)}
+              required
+              type="text"
+              className="border min-h-20 border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none rounded-xl px-4 py-2 transition-all duration-200"
+              placeholder="Məs:Tövbə 12"
+            />
+          </div>
+
           {/* odenislinki hissesi */}
           <div className="flex flex-col">
             <label className="text-sm text-gray-700 font-medium mb-1">
@@ -386,47 +403,6 @@ const Ianeyerlestir = () => {
               className="border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none rounded-xl px-4 py-2 transition-all duration-200"
               placeholder="Məsələn: 50"
             />
-          </div>
-
-          {/* Bitmə tarixi (opsiyonel) */}
-          <div className="flex flex-col">
-            <label className="text-sm text-gray-700 font-medium mb-1">
-              Bitmə tarixi (İstəyə bağlı)
-            </label>
-
-            {/* Aktivləşdir butonu */}
-            {!showBitirInput && (
-              <button
-                type="button"
-                onClick={() => setShowBitirInput(true)}
-                className="bg-indigo-100 cursor-pointer text-indigo-700 text-sm px-3 py-2 rounded-lg w-max hover:bg-indigo-200 transition"
-              >
-                Bitmə tarixini əlavə et
-              </button>
-            )}
-
-            {/* Tarix seçici (aktivləşdikdən sonra görünür) */}
-            {showBitirInput && (
-              <div className="flex items-center gap-2 mt-2">
-                <input
-                  type="date"
-                  value={bitir}
-                  onChange={(e) => setBitir(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                  className="border border-gray-300 focus:border-indigo-500 cursor-pointer focus:ring-2 focus:ring-indigo-200 outline-none rounded-xl px-4 py-2 transition-all duration-200 w-full"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBitir("");
-                    setShowBitirInput(false);
-                  }}
-                  className="bg-red-100 cursor-pointer text-red-700 text-sm px-3 py-2 rounded-lg hover:bg-red-200 transition"
-                >
-                  Ləğv et
-                </button>
-              </div>
-            )}
           </div>
 
           {/* List üçün şəkil */}
@@ -499,6 +475,47 @@ const Ianeyerlestir = () => {
                 ya faylları bura sürüklə.
               </p>
             </div>
+          </div>
+
+          {/* Bitmə tarixi (opsiyonel) */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-700 font-medium mb-1">
+              Bitmə tarixi (İstəyə bağlı)
+            </label>
+
+            {/* Aktivləşdir butonu */}
+            {!showBitirInput && (
+              <button
+                type="button"
+                onClick={() => setShowBitirInput(true)}
+                className="bg-indigo-100 cursor-pointer text-indigo-700 text-sm px-3 py-2 rounded-lg w-max hover:bg-indigo-200 transition"
+              >
+                Bitmə tarixini əlavə et
+              </button>
+            )}
+
+            {/* Tarix seçici (aktivləşdikdən sonra görünür) */}
+            {showBitirInput && (
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="date"
+                  value={bitir}
+                  onChange={(e) => setBitir(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="border border-gray-300 focus:border-indigo-500 cursor-pointer focus:ring-2 focus:ring-indigo-200 outline-none rounded-xl px-4 py-2 transition-all duration-200 w-full"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBitir("");
+                    setShowBitirInput(false);
+                  }}
+                  className="bg-red-100 cursor-pointer text-red-700 text-sm px-3 py-2 rounded-lg hover:bg-red-200 transition"
+                >
+                  Ləğv et
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
