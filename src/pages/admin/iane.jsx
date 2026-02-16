@@ -682,12 +682,7 @@ const Iane = () => {
                       <h4 className="font-extrabold text-lg text-gray-700 mb-2 border-b pb-1">
                         📋 Ətraflı Məlumat
                       </h4>
-                      <p className="text-gray-600">
-                        <span className="font-semibold text-gray-800">
-                          İmam:
-                        </span>{" "}
-                        {iane.imamname} {iane.imamsurname}
-                      </p>
+                    
                       <p className="text-gray-600">
                         <span className="font-semibold text-gray-800">
                           Məscid:
@@ -778,12 +773,12 @@ const Iane = () => {
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedPhoto(iane.cardImage.card_image_url);
+                            setSelectedPhoto(iane?.cardImage?.card_image_url);
                           }}
                           className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 cursor-pointer rounded-lg overflow-hidden border-4 border-white hover:border-indigo-500 transition shadow-lg transform hover:scale-105"
                         >
                           <img
-                            src={iane.cardImage.card_image_url}
+                            src={iane?.cardImage?.card_image_url}
                             alt={"İanə kart şəkli"}
                             className="w-full h-full object-cover"
                           />
