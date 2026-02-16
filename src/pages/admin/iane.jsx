@@ -372,6 +372,8 @@ const Iane = () => {
   const [deletemenu, setDeletemenu] = useState(null); // ID saxlamaq üçün 'null' istifadə edilir
   const { accessToken } = useAuth();
   const [editingIane, setEditingIane] = useState(null); // Redaktə üçün state
+  const [loading, setloading] = useState(false);
+  const [deleteloading, setdeleteloading] = useState(false);
 
   // 2. Yenilənmə funksiyası (Modal bağlandıqdan sonra siyahını yeniləmək üçün)
   const handleUpdateList = (updatedData) => {
@@ -387,6 +389,7 @@ const Iane = () => {
 
   useEffect(() => {
     const fetchIaneler = async () => {
+      setloading(true);
       try {
         const res = await api.get(API_URLS.ADMIN.GETIANELER, {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -397,12 +400,15 @@ const Iane = () => {
         setIaneler(sorted);
       } catch (err) {
         console.error("İanələri gətirmə xətası:", err);
+      } finally {
+        setloading(false);
       }
     };
     fetchIaneler();
   }, []);
 
   const deleteiane = async (id) => {
+    setdeleteloading(true);
     try {
       await api.delete(
         `${API_URLS.ADMIN.DELETEIANE}/${id}`,
@@ -418,6 +424,8 @@ const Iane = () => {
       // Yenilənmiş siyahını gətirmək üçün fetchIaneler() çağırıla bilər, lakin filterləmək kifayət olmalıdır.
     } catch (err) {
       console.error("Silme hatası:", err);
+    } finally {
+      setdeleteloading(false);
     }
   };
 
@@ -546,6 +554,17 @@ const Iane = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex flex-col items-center justify-center">
+        <Loader2 size={34} className="animate-spin text-green-600" />
+        <p className="font-semibold text-xl text-green-600 animate-pulse">
+          Yüklənir...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
       <h1 className="text-4xl font-extrabold mb-8 text-gray-900 border-b-4 border-indigo-500 pb-2">
@@ -597,7 +616,6 @@ const Iane = () => {
 
                 {/* İmam & Məscid */}
                 <div className="hidden lg:block col-span-2 text-sm text-gray-700 truncate">
-                  <p className="font-semibold truncate">{iane.imamname}</p>
                   <p className="text-xs text-gray-500 truncate">
                     {iane.mescid}
                   </p>
@@ -855,9 +873,14 @@ const Iane = () => {
                   e.stopPropagation();
                   deleteiane(deletemenu);
                 }}
+                disabled={deleteloading}
                 className="px-6 py-2 cursor-pointer rounded-xl bg-red-600 text-white hover:bg-red-700 transition font-semibold shadow-lg"
               >
-                Bəli, Sil
+                {deleteloading ? (
+                  <Loader2 className="animate-spin text-white" />
+                ) : (
+                  "Bəli, Sil"
+                )}
               </button>
             </div>
           </div>
